@@ -1,9 +1,7 @@
 extern crate web3;
-use log::{info, warn};
+use log::{warn};
 use reqwest::{header::CONTENT_TYPE, Client};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
-use std::char::ToLowercase;
 use std::collections::HashMap;
 use std::error::Error;
 
@@ -27,10 +25,10 @@ pub struct POSTAPIResponse {
     result: RPCStruct,
 }
 
-// #[derive(Serialize, Deserialize, Debug)]
-// struct JSONResponse {
-//     json: HashMap<String, String>,
-// }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JSONResponse {
+    json: HashMap<String, String>,
+}
 
 // get RPC methods from node
 #[tokio::main]
