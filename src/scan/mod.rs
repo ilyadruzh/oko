@@ -1,4 +1,4 @@
-pub mod evm_scan;
+pub mod evm_net_scan;
 #[macro_use]
 pub mod errors;
 pub mod blockchain;

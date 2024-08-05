@@ -3,6 +3,7 @@ pub mod rest_api;
 pub mod scan;
 
 use clap::{Arg, Command};
+use scan::evm_net_scan::start_scan_evm_networks;
 use std::boxed::Box;
 use std::path::PathBuf;
 use std::process;
@@ -18,6 +19,7 @@ use crate::scan::callbacks::unspentcsvdump::UnspentCsvDump;
 use crate::scan::callbacks::Callback;
 use crate::scan::common::logger::SimpleLogger;
 use crate::scan::common::utils;
+use crate::database::evm_db::get_nodes_from_chainid_list;
 
 use crate::scan::types::*;
 
@@ -25,9 +27,9 @@ use crate::scan::errors::OpResult;
 
 #[macro_use]
 extern crate log;
-extern crate chrono;
 extern crate bitcoin;
 extern crate byteorder;
+extern crate chrono;
 extern crate rayon;
 extern crate rusty_leveldb;
 extern crate seek_bufread;
@@ -89,48 +91,63 @@ fn command() -> Command {
 
 #[tokio::main]
 async fn main() {
-    let options = match parse_args(command().get_matches()) {
-        Ok(o) => o,
-        Err(desc) => {
-            // Init logger to print outstanding error message
-            SimpleLogger::init(log::LevelFilter::Debug).unwrap();
-            error!(target: "main", "{}", desc);
-            process::exit(1);
-        }
-    };
 
-    // Apply log filter based on verbosity
-    let log_level = options.log_level_filter;
-    SimpleLogger::init(log_level).expect("Unable to initialize logger!");
-    info!(target: "main", "Стартуем Око v{} ...", env!("CARGO_PKG_VERSION"));
-    debug!(target: "main", "Уровень логирования {}", log_level);
-    if options.verify {
-        info!(target: "main", "Configured to verify merkle roots and block hashes");
-    }
+    start_scan_evm_networks(true);
 
-    let chain_storage = match ChainStorage::new(&options) {
-        Ok(storage) => storage,
-        Err(e) => {
-            error!(
-                target: "main",
-                "Cannot load blockchain data from: '{}'. {}",
-                options.blockchain_dir.display(),
-                e
-            );
-            process::exit(1);
-        }
-    };
 
-    let mut parser = BlockchainParser::new(options, chain_storage);
-    match parser.start() {
-        Ok(_) => info!(target: "main", "Fin."),
-        Err(why) => {
-            error!("{}", why);
-            process::exit(1);
-        }
-    }
+    // let test_client: reqwest::Client = reqwest::Client::new();
+    // const uri: &str =
+    //     "https://services.tokenview.io/vipapi/nodeservice/eth?apikey=qVHq2o6jpaakcw3lRstl";
 
-    rest_api::start_server();
+    // let _result = get_all_rpc_methods(&test_client, uri);
+
+
+    // Ok(())
+
+    // println!("rpc request: ", result);
+
+    // rest_api::start_server();
+
+    // let options = match parse_args(command().get_matches()) {
+    //     Ok(o) => o,
+    //     Err(desc) => {
+    //         // Init logger to print outstanding error message
+    //         SimpleLogger::init(log::LevelFilter::Debug).unwrap();
+    //         error!(target: "main", "{}", desc);
+    //         process::exit(1);
+    //     }
+    // };
+
+    // // Apply log filter based on verbosity
+    // let log_level = options.log_level_filter;
+    // SimpleLogger::init(log_level).expect("Unable to initialize logger!");
+    // info!(target: "main", "Стартуем Око v{} ...", env!("CARGO_PKG_VERSION"));
+    // debug!(target: "main", "Уровень логирования {}", log_level);
+    // if options.verify {
+    //     info!(target: "main", "Configured to verify merkle roots and block hashes");
+    // }
+
+    // let chain_storage = match ChainStorage::new(&options) {
+    //     Ok(storage) => storage,
+    //     Err(e) => {
+    //         error!(
+    //             target: "main",
+    //             "Cannot load blockchain data from: '{}'. {}",
+    //             options.blockchain_dir.display(),
+    //             e
+    //         );
+    //         process::exit(1);
+    //     }
+    // };
+
+    // let mut parser = BlockchainParser::new(options, chain_storage);
+    // match parser.start() {
+    //     Ok(_) => info!(target: "main", "Fin."),
+    //     Err(why) => {
+    //         error!("{}", why);
+    //         process::exit(1);
+    //     }
+    // }
 }
 
 /// Parses args or panics if some requirements are not met.

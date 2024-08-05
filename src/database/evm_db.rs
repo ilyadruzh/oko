@@ -1,8 +1,54 @@
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::sync::Arc;
+use std::{collections::HashMap, fs};
 use warp::{http, Filter};
+
+// from https://chainid.network/chains.json
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+
+struct ChainIDFeatures {
+    name: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+
+struct ChainIDNativeCurrency {
+    name: String,
+    symbol: String,
+    decimals: u64,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+struct ChainIDEns {
+    registry: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+struct ChainIDExplorer {
+    name: String,
+    // icon: String,
+    url: String,
+    standard: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct ChainIDNodeInfo {
+    name: String,
+    // icon: String,
+    pub rpc: Vec<String>,
+    // features: Vec<ChainIDFeatures>,
+    faucets: Vec<String>,
+    nativeCurrency: ChainIDNativeCurrency,
+    // info_url: String,
+    // short_name: String,
+    // chain_id: String,
+    // network_id: String,
+    // slip44: u64,
+    // ens: ChainIDEns,
+    // explorers: Vec<ChainIDExplorer>,
+}
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 struct NodeInfo {
@@ -30,6 +76,32 @@ impl Store {
             evm_nodes: Arc::new(RwLock::new(HashMap::new())),
         }
     }
+}
+
+pub fn get_nodes_from_chainid_list() -> Vec<ChainIDNodeInfo> {
+    let res = fs::read_to_string("src/database/evm_chains_1.json").expect("Can't read file"); // read file into string
+
+    // let s = match res { // get value from Result object
+    //     Ok(s) => s,
+    //     Err(_) => panic!("Can't read file")
+    // };
+
+    let nodes = serde_json::from_str::<Vec<ChainIDNodeInfo>>(&res).expect("Can't parse json"); //.unwrap();
+
+    // for node in &nodes {
+    //     for url in &node.rpc {
+    //         println!("node rpc: {}", url);
+    //     }
+    // }
+
+    // // change values
+    // json_data[0]["name"] = serde_json::json!(123);
+    // json_data[0]["name"] = serde_json::json!("mascai");
+
+    // std::fs::write("output.json", serde_json::to_string_pretty(&json_data).unwrap())
+    //     .expect("Can't write to file");
+
+    nodes
 }
 
 pub async fn add_node_to_evm_nodes(
@@ -81,7 +153,6 @@ pub fn delete_json() -> impl Filter<Extract = (EVMNode,), Error = warp::Rejectio
     // (and to reject huge payloads)...
     warp::body::content_length_limit(1024 * 16).and(warp::body::json())
 }
-
 
 pub fn json_body() -> impl Filter<Extract = (EVMNode,), Error = warp::Rejection> + Clone {
     // When accepting a body, we want a JSON body
