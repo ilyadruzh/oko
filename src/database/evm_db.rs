@@ -35,7 +35,7 @@ struct ChainIDExplorer {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ChainIDNodeInfo {
-    name: String,
+    pub name: String,
     // icon: String,
     pub rpc: Vec<String>,
     // features: Vec<ChainIDFeatures>,

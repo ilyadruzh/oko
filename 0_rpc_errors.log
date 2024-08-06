@@ -1,7 +1,4 @@
 https://rpc.ankr.com/syscoin/${ANKR_API_KEY} - "not authorized"
+https://rpc.filefilego.com/rpc - "rpc: service/method request ill-formed: \"rpc_modules\""
 https://gnosis-rpc.publicnode.com - "rpc_modules found but the containing module is disabled for the url 'http://0.0.0.0:8545', consider adding module in JsonRpcConfig.AdditionalRpcUrls for additional url, or to JsonRpcConfig.EnabledModules for default url"
 https://rpc.filefilego.com/rpc - "rpc: service/method request ill-formed: \"rpc_modules\""
-https://rpc.exosama.com - "rpc_modules found but the containing module is disabled for the url 'http://0.0.0.0:8545', consider adding module in JsonRpcConfig.AdditionalRpcUrls for additional url, or to JsonRpcConfig.EnabledModules for default url"
-https://www.kortho-chain.com - "Unsupport method:rpc_modules"
-https://babel-api.mainnet.iotex.io - "method: rpc_modules\n: web3 method not found"
-https://babel-api.testnet.iotex.io - "method: rpc_modules\n: web3 method not found"

@@ -23,3 +23,17 @@ csvdump
 
 debug.sh
 dump/
+
+web3_clientVersion.log
+node_response.log
+node_info.log
+debug_nodes.log
+archive/
+nodes_rpc_modules.old.log
+nodes_rpc_modules.log
+nodes_response_error.log
+nodes_errors.log
+http_errors.log
+32601_rpc_errors.log
+32001_rpc_errors.log
+0_rpc_errors.log

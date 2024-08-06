@@ -1,20 +1,15 @@
 extern crate web3;
-use crate::database::evm_db::{get_nodes_from_chainid_list, ChainIDNodeInfo};
-use bitcoin::taproot::NodeInfo;
-use futures::TryFutureExt;
-use log::warn;
-use reqwest::{header::CONTENT_TYPE, Client};
+use crate::database::evm_db::get_nodes_from_chainid_list;
+use reqwest::header::CONTENT_TYPE;
 use reqwest::{Response, StatusCode};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::error::Error;
-use std::fmt::{self, Display};
 use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::thread;
 use std::time::Duration;
-use tokio::runtime::Handle;
 
 const TIMEOUT: Duration = Duration::from_secs(10);
 
@@ -76,46 +71,28 @@ pub fn start_scan_evm_networks() {
         }
     }
 }
-// get RPC modules from node
-// pub async fn get_rpc_modules(handle: &Handle, uri:  &str) {
+
 #[tokio::main]
 pub async fn get_rpc_modules_async(uri: String) -> Result<(), Box<dyn Error>> {
     let client: reqwest::Client = reqwest::Client::new();
 
     let mut map = HashMap::new();
 
-    let mut node_error = File::options()
-        .write(true)
-        .append(true)
-        .open("nodes_errors.log") // TODO: called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
-        .unwrap();
-
-    let mut http_error = File::options()
-        .write(true)
-        .append(true)
-        .open("http_errors.log") // TODO: called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
-        .unwrap();
-
-    let mut node_info = OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open("nodes_rpc_modules.log")
-        .unwrap();
-
-    let mut node_response = OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open("nodes_response_error.log")
-        .unwrap();
+    let node_error = open_file("nodes_errors.log".to_string());
+    let mut http_error = open_file("http_errors.log".to_string());
+    let mut node_info = open_file("node_info.log".to_string());
+    let mut node_response = open_file("node_response.log".to_string());
+    let mut debug_nodes = open_file("debug_nodes.log".to_string());
 
     map.insert("jsonrpc", "2.0");
     map.insert("method", "rpc_modules");
     // map.insert("params", "[]");
     map.insert("id", "67");
 
-    if is_processed(&uri) {
-        return Ok(());
-    }
+    // if is_processed(&uri) {
+    //     println!("is_processed: {}", is_processed(&uri));
+    //     return Ok(());
+    // }
 
     let resp = client
         .post(&uri)
@@ -131,6 +108,8 @@ pub async fn get_rpc_modules_async(uri: String) -> Result<(), Box<dyn Error>> {
                 // 200
                 reqwest::StatusCode::OK => {
                     let resp_200 = r.text().await?; //.json::<POSTAPIResponse>().await?;
+                    let new_uri: String = uri.clone();
+
                     if resp_200 == "" {
                         let record = uri.clone() + " - NULL: " + &resp_200;
                         if !is_exist("nodes_rpc_modules.log".to_string(), &record) {
@@ -155,27 +134,55 @@ pub async fn get_rpc_modules_async(uri: String) -> Result<(), Box<dyn Error>> {
                         return Ok(());
                     }
 
-                    // let json_val: POSTAPIResponse = serde_json::from_str(&resp_200).unwrap();
-                    // if let Ok(json_val: serde_json::Value) = serde_json::from_str(&resp_200) {}
-
                     let json_val: serde_json::Value = serde_json::from_str(&resp_200).unwrap();
 
                     if let Some(rpc_modules) = json_val.get("result") {
                         let record: String = uri.clone() + " - " + &rpc_modules.to_string();
-                        // println!("record: {}", &record);
+
                         if !is_exist("nodes_rpc_modules.log".to_string(), &record) {
-                            call_rpc_method(&uri, "txpool_status".to_string());
-                            writeln!(node_info, "{} - {}", &uri.to_string(), rpc_modules).unwrap();
+
+                            if rpc_modules.to_string().contains("debug") {
+                                let (network_name, network_type) = get_network_info(uri.to_owned());
+
+
+                                // let client: Result<Value, Box<dyn Error>;
+
+                                thread::spawn(move || {
+                                    let web3_client =
+                                        call_rpc_method(&uri.to_owned(), &"web3_clientVersion".to_string());
+                                        writeln!(
+                                            debug_nodes,
+                                            "{} - {} - {} - {}",
+                                            &network_name,
+                                            network_type,
+                                            web3_client.unwrap().to_string(),
+                                            &uri.to_string()
+                                        )
+                                        .unwrap();
+                                })
+                                .join()
+                                .expect("Thread panicked");
+
+                                // let client: Result<Value, Box<dyn Error>> =
+                                //     call_rpc_method(&uri, &"web3_clientVersion".to_string());
+
+                            }
+                            writeln!(node_info, "{} - {}", &new_uri.to_string(), rpc_modules).unwrap();
                         }
                     }
 
                     if let Some(status) = json_val.get("error") {
-                        aggregate_error(
-                            uri,
-                            status.get("code").unwrap().to_string(),
-                            status.get("message").unwrap().to_string(),
-                        );
-                        // writeln!(node_response, "{} - ERROR: - {}", uri, status).unwrap();
+                        println!("status: {}", status.to_string());
+
+                        if status.to_string().eq_ignore_ascii_case("invalid method") {
+                            println!("invalid method");
+                            return Ok(());
+                        } else {
+                            if let Some(status_code) = status.get("code") {
+                                let status_message = status.get("message").unwrap().to_string();
+                                aggregate_error(new_uri, status_code.to_string(), status_message);
+                            }
+                        }
                     }
 
                     Ok(())
@@ -200,14 +207,21 @@ pub async fn get_rpc_modules_async(uri: String) -> Result<(), Box<dyn Error>> {
     }
 }
 
-pub fn get_all_debug_methods(uri: String) {
-    todo!()
-}
-
 #[tokio::main]
-pub async fn call_rpc_method(uri: &String, method: String) {
+pub async fn call_rpc_method(uri: &String, method: &String) -> Result<Value, Box<dyn Error>> {
     let client: reqwest::Client = reqwest::Client::new();
     let mut map = HashMap::new();
+
+    let mut value = json!(null);
+
+    let filepath = method.to_owned() + ".log";
+
+    let method_file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .append(true)
+        .open(&filepath)
+        .unwrap();
 
     map.insert("jsonrpc", "2.0");
     map.insert("method", &method);
@@ -227,12 +241,39 @@ pub async fn call_rpc_method(uri: &String, method: String) {
             match r.status() {
                 // 200
                 reqwest::StatusCode::OK => {
-                    println!("Response for method - {}: {:?}", method, r);
-                    println!("");
+                    let resp_200 = r.text().await?;
+                    if resp_200 == "" {
+                        // writeln!(node_response, "{} - NULL: {:?}", uri, resp_200).unwrap();
+                        return Ok(value);
+                    }
+
+                    let json_val: serde_json::Value = serde_json::from_str(&resp_200).unwrap();
+
+                    if method == "web3_clientVersion" {
+                        if let Some(res) = json_val.get("result") {
+                            println!("CALL {} with RESULT: {}", method, res.to_string());
+                            if !is_exist(filepath, &res.to_string()) {
+                                write_to_file(method_file, uri, &res.to_string()).await;
+                            }
+
+                            value = res.clone();
+                            return Ok(value);
+                        }
+                    } else if method == "txpool_status" {
+                        if let Some(txpool_status) = json_val.get("result") {
+                            let pending = txpool_status.get("pending");
+                            println!("pending: {}", pending.unwrap().to_string());
+                            return Ok(value);
+                        }
+                    }
+
+                    println!("Method doesn't allowed");
+                    return Ok(value);
                 }
                 _ => {
                     println!("Response status for method - {}: {}", method, r.status());
                     println!("");
+                    return Ok(value);
                 }
             }
         }
@@ -241,14 +282,7 @@ pub async fn call_rpc_method(uri: &String, method: String) {
             let url = e.url();
             let source = e.source();
             println!("");
-
-            // let record: String = url.unwrap().to_string() + " - " + &source.unwrap().to_string();
-
-            // println!("{} - {:?}", url.unwrap().to_string(), source);
-
-            // if !is_exist("http_errors.log".to_string(), &record) {
-            //     println!("{} - {:?}", url.unwrap().to_string(), source);
-            // }
+            return Ok(value);
         }
     }
 }
@@ -281,19 +315,37 @@ fn is_processed(uri: &String) -> bool {
     let mut res = false;
 
     for f in files {
-        let file = File::open(f).unwrap();
+        println!("f: {}", f);
+
+        let file = open_file(f.to_string());
         let reader = BufReader::new(file);
 
         for line in reader.lines() {
-            if line.unwrap().contains(uri) {
-                res = true;
-            } else {
+            // let lll = line.unwrap().to_owned();
+            println!("lll"); //.unwrap());
+
+            if let Ok(l) = line {
+                println!("line: {}", &l); //.unwrap());
+
+                if l.contains(uri) {
+                    res = true;
+                }
             }
         }
     }
     res
 }
 
+fn open_file(name: String) -> File {
+    let file = File::options()
+        .create(true)
+        .write(true)
+        .append(true)
+        .open(name) // TODO: called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+        .unwrap();
+
+    return file;
+}
 async fn write_error_to_file(file_path: File, uri: String, status: StatusCode, response: Response) {
     if let Err(resp_error) = response.json::<POSTAPIResponse>().await {
         let record: String = uri + " - " + &status.to_string() + " - " + &resp_error.to_string();
@@ -306,24 +358,30 @@ async fn write_error_to_file(file_path: File, uri: String, status: StatusCode, r
     }
 }
 
+async fn write_to_file(file_path: File, uri: &String, record: &String) {
+    if !is_exist("nodes_errors.log".to_string(), &record) {
+        writeln!(&file_path, "{} - {}", uri, record).unwrap();
+    }
+}
+
 fn aggregate_error(uri: String, status_code: String, status_message: String) {
     println!("status_code: {}", status_code);
 
-    let mut file_0 = OpenOptions::new()
+    let file_0 = OpenOptions::new()
         .write(true)
         .append(true)
         // .truncate(true)
         .open("0_rpc_errors.log")
         .unwrap();
 
-    let mut file_32001 = OpenOptions::new()
+    let file_32001 = OpenOptions::new()
         .write(true)
         .append(true)
         // .truncate(true)
         .open("32001_rpc_errors.log")
         .unwrap();
 
-    let mut file_32601 = OpenOptions::new()
+    let file_32601 = OpenOptions::new()
         .write(true)
         .append(true)
         // .truncate(true)
@@ -345,6 +403,28 @@ fn aggregate_error(uri: String, status_code: String, status_message: String) {
     }
 }
 
+fn get_network_info(uri: String) -> (String, String) {
+    let nodes = get_nodes_from_chainid_list();
+
+    let mut network_name: String = "".to_string();
+    let mut network_type: String = "mainnet".to_string();
+    let mut network_client: String = "".to_string();
+
+    for n in nodes {
+        for r in n.rpc {
+            if r.contains(&uri) {
+                network_name = n.name.to_owned();
+
+                if r.contains("test") || r.contains("Test") {
+                    network_type = "testnet".to_owned();
+                }
+            }
+        }
+    }
+
+    return (network_name, network_type);
+}
+
 pub fn get_correct_nodes_from_file() -> Vec<String> {
     let mut nodes: Vec<String> = Vec::from(["".to_string()]);
 
@@ -354,7 +434,7 @@ pub fn get_correct_nodes_from_file() -> Vec<String> {
     for line in reader.lines() {
         let l = line.unwrap().to_owned();
         let (a, b) = l.split_once(char::is_whitespace).unwrap();
-        nodes.push(a.clone().to_string().to_owned());
+        nodes.push(a.to_string().to_owned());
     }
 
     return nodes;
