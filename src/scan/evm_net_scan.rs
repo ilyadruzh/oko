@@ -4,13 +4,19 @@ use bitcoin::taproot::NodeInfo;
 use futures::TryFutureExt;
 use log::warn;
 use reqwest::{header::CONTENT_TYPE, Client};
+use reqwest::{Response, StatusCode};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::collections::HashMap;
 use std::error::Error;
+use std::fmt::{self, Display};
 use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::thread;
+use std::time::Duration;
 use tokio::runtime::Handle;
+
+const TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GETAPIResponse {
@@ -27,6 +33,16 @@ struct RPCStruct {
     trace: String,
 }
 
+// impl fmt::Display for RPCStruct {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(
+//             f,
+//             "{} {} {} {} {} {}",
+//             self.eth, self.debug, self.net, self.web3, self.txpool, self.trace
+//         )
+//     }
+// }
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct POSTAPIResponse {
     result: RPCStruct,
@@ -37,28 +53,27 @@ pub struct JSONResponse {
     json: HashMap<String, String>,
 }
 
-pub fn start_scan_evm_networks(asynchronous: bool) {
+pub fn start_scan_evm_networks() {
     let nodes = get_nodes_from_chainid_list();
 
-    if (asynchronous) {
-        println!("async true");
+    let all_urls = nodes.len() + 1;
+    let mut count_urls = 0;
 
-        for n in nodes {
-            for u in n.rpc {
-                if (u.contains("wss://") || u.contains("https://")) {
-                } else {
-                    println!("rpc_url: {}", &u);
-                    thread::spawn(move || {
-                        let _ = get_rpc_modules_async((&u).to_string());
-                    })
-                    .join()
-                    .expect("Thread panicked")
-                }
+    for n in nodes {
+        for u in n.rpc {
+            if false {
+            } else {
+                count_urls += 1;
+
+                println!("{}", all_urls - count_urls);
+
+                thread::spawn(move || {
+                    let _ = get_rpc_modules_async((&u).to_string());
+                })
+                .join()
+                .expect("Thread panicked")
             }
         }
-    } else {
-        println!("async false");
-        get_rpc_modules_sync(nodes);
     }
 }
 // get RPC modules from node
@@ -69,293 +84,281 @@ pub async fn get_rpc_modules_async(uri: String) -> Result<(), Box<dyn Error>> {
 
     let mut map = HashMap::new();
 
-    let mut nodes_errors = File::options()
+    let mut node_error = File::options()
         .write(true)
         .append(true)
         .open("nodes_errors.log") // TODO: called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
         .unwrap();
 
+    let mut http_error = File::options()
+        .write(true)
+        .append(true)
+        .open("http_errors.log") // TODO: called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+        .unwrap();
+
     let mut node_info = OpenOptions::new()
         .write(true)
         .append(true)
-        .open("nodes_rpc.log")
+        .open("nodes_rpc_modules.log")
+        .unwrap();
+
+    let mut node_response = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open("nodes_response_error.log")
         .unwrap();
 
     map.insert("jsonrpc", "2.0");
     map.insert("method", "rpc_modules");
-    map.insert("params", "[]");
+    // map.insert("params", "[]");
     map.insert("id", "67");
 
+    if is_processed(&uri) {
+        return Ok(());
+    }
+
     let resp = client
-        .post(uri)
+        .post(&uri)
+        .timeout(TIMEOUT)
         .header(CONTENT_TYPE, "application/json")
         .json(&map)
         .send()
         .await;
-
-    // if let Some(resp) = client
-    // .post(uri)
-    // .header(CONTENT_TYPE, "application/json")
-    // .json(&map)
-    // .send()
-    // .await? {
 
     match resp {
         Ok(r) => {
             match r.status() {
                 // 200
                 reqwest::StatusCode::OK => {
-                    println!("Success!");
                     let resp_200 = r.text().await?; //.json::<POSTAPIResponse>().await?;
+                    if resp_200 == "" {
+                        let record = uri.clone() + " - NULL: " + &resp_200;
+                        if !is_exist("nodes_rpc_modules.log".to_string(), &record) {
+                            writeln!(node_response, "{} - NULL: {:?}", uri, resp_200).unwrap();
+                        }
+                        return Ok(());
+                    }
+
+                    if resp_200.contains("<!doctype html>")
+                        || resp_200.contains("<html>")
+                        || resp_200.contains("<!DOCTYPE html>")
+                        || resp_200.contains("<html lang=")
+                    {
+                        let record = uri.clone() + " - NULL: " + &resp_200;
+                        if !is_exist("nodes_rpc_modules.log".to_string(), &record) {
+                            writeln!(node_response, "{} - NULL: {:?}", uri, resp_200).unwrap();
+                        }
+                        return Ok(());
+                    }
+
+                    if resp_200.contains("LBRY") {
+                        return Ok(());
+                    }
+
+                    // let json_val: POSTAPIResponse = serde_json::from_str(&resp_200).unwrap();
+                    // if let Ok(json_val: serde_json::Value) = serde_json::from_str(&resp_200) {}
 
                     let json_val: serde_json::Value = serde_json::from_str(&resp_200).unwrap();
 
-                    if let Some(r) = json_val.get("result") {
-                        let val = json_val.get("result").unwrap();
-                        writeln!(node_info, "{}", val).unwrap();
-                    }
-
-                    if let Some(v) = json_val.get("error") {
-                        let status = json_val.get("error").unwrap();
-                        let error_code = status.get("code").unwrap();
-                        let error_message = status.get("message").unwrap();
-
-                        match error_code.to_string().as_str() {
-                            "-32602" => {
-                                println!("Error message: {}", error_message);
-                                return Ok(());
-                            }
-                            "-32601" => {
-                                println!("Error message: {}", error_message);
-                                return Ok(());
-                            }
-                            _ => {
-                                println!("Error code: {}", error_code);
-                                println!("Error message: {}", error_message);
-                                return Ok(());
-                            }
+                    if let Some(rpc_modules) = json_val.get("result") {
+                        let record: String = uri.clone() + " - " + &rpc_modules.to_string();
+                        // println!("record: {}", &record);
+                        if !is_exist("nodes_rpc_modules.log".to_string(), &record) {
+                            call_rpc_method(&uri, "txpool_status".to_string());
+                            writeln!(node_info, "{} - {}", &uri.to_string(), rpc_modules).unwrap();
                         }
                     }
 
-                    Ok(())
-                }
-                // 400
-                reqwest::StatusCode::BAD_REQUEST => {
-                    warn!("Got 400! BAD_REQUEST");
-                    let resp_400 = r.json::<POSTAPIResponse>().await;
-
-                    println!("{:#?}", resp_400);
-
-                    Ok(())
-                }
-                // 401
-                reqwest::StatusCode::UNAUTHORIZED => {
-                    warn!("Got 401! UNAUTHORIZED");
-                    let resp_401 = r.json::<POSTAPIResponse>().await;
-
-                    println!("{:#?}", resp_401);
-
-                    Ok(())
-                }
-
-                // 403
-                reqwest::StatusCode::FORBIDDEN => {
-                    warn!("Got 403! FORBIDDEN");
-                    let resp_403 = r.json::<POSTAPIResponse>().await;
-
-                    println!("{:#?}", resp_403);
-
-                    Ok(())
-                }
-                // 404
-                reqwest::StatusCode::NOT_FOUND => {
-                    warn!("Got 404! Haven't found resource!");
-                    let resp_404 = r.json::<POSTAPIResponse>().await;
-                    println!("{:#?}", resp_404);
-
-                    Ok(())
-                }
-                // 405
-                reqwest::StatusCode::METHOD_NOT_ALLOWED => {
-                    warn!("Got 405! METHOD_NOT_ALLOWED");
-                    let resp_405 = r.json::<POSTAPIResponse>().await;
-                    println!("{:#?}", resp_405);
-
-                    Ok(())
-                }
-                // 406
-                reqwest::StatusCode::NOT_ACCEPTABLE => {
-                    warn!("Got 406! NOT_ACCEPTABLE");
-                    let resp_406 = r.json::<POSTAPIResponse>().await;
-
-                    println!("{:#?}", resp_406);
-
-                    Ok(())
-                }
-
-                // 410
-                reqwest::StatusCode::GONE => {
-                    warn!("Got 410! GONE");
-                    let resp_410 = r.json::<POSTAPIResponse>().await;
-                    println!("{:#?}", resp_410);
-                    Ok(())
-                }
-                // 429
-                reqwest::StatusCode::TOO_MANY_REQUESTS => {
-                    warn!("Got 429! ");
-                    let resp_429 = r.json::<POSTAPIResponse>().await;
-                    println!("Got {:#?} TOO_MANY_REQUESTS", resp_429);
-
-                    Ok(())
-                }
-                // 500
-                reqwest::StatusCode::INTERNAL_SERVER_ERROR => {
-                    warn!("Status 500! Internal server error!");
-                    let resp_500 = r.json::<POSTAPIResponse>().await;
-                    println!("{:#?}", resp_500);
+                    if let Some(status) = json_val.get("error") {
+                        aggregate_error(
+                            uri,
+                            status.get("code").unwrap().to_string(),
+                            status.get("message").unwrap().to_string(),
+                        );
+                        // writeln!(node_response, "{} - ERROR: - {}", uri, status).unwrap();
+                    }
 
                     Ok(())
                 }
                 _ => {
-                    let line = r.status().to_string();
-
-                    let file = File::open("nodes_errors.log")?;
-                    let reader = BufReader::new(file);
-
-                    for line in reader.lines() {
-                        let line = line.unwrap();
-                        if line.contains(&line) {
-                            println!("{}", line);
-                        } else {
-                            writeln!(nodes_errors, "{}", line).unwrap();
-                        }
-                    }
-
+                    write_error_to_file(node_error, uri.to_string(), r.status(), r).await;
                     Ok(())
                 }
             }
         }
         Err(e) => {
-            println!("REQUEST ERROR: {}", e);
+            let url = e.url();
+            let source = e.source();
+            let record: String = url.unwrap().to_string() + " - " + &source.unwrap().to_string();
+
+            if !is_exist("http_errors.log".to_string(), &record) {
+                writeln!(http_error, "{} - {:?}", url.unwrap().to_string(), source).unwrap();
+            }
+
             Ok(())
         }
     }
 }
 
-// save RPC methods to DB
-// get node uri from DB
+pub fn get_all_debug_methods(uri: String) {
+    todo!()
+}
+
 #[tokio::main]
-pub async fn get_rpc_modules_sync(nodes: Vec<ChainIDNodeInfo>) {
-    let mut client: reqwest::Client = reqwest::Client::new();
+pub async fn call_rpc_method(uri: &String, method: String) {
+    let client: reqwest::Client = reqwest::Client::new();
     let mut map = HashMap::new();
 
-    let mut f = File::options()
-        .append(true)
-        .open("nodes_errors.log")
-        .unwrap();
-
     map.insert("jsonrpc", "2.0");
-    map.insert("method", "rpc_modules");
-    map.insert("params", "[]");
+    map.insert("method", &method);
+    // map.insert("params", "[]");
     map.insert("id", "67");
 
-    for n in nodes {
-        for u in n.rpc {
-            let resp = client
-                .post(u)
-                .header(CONTENT_TYPE, "application/json")
-                .json(&map)
-                .send()
-                .await
-                .unwrap();
+    let resp = client
+        .post(uri)
+        .timeout(TIMEOUT)
+        .header(CONTENT_TYPE, "application/json")
+        .json(&map)
+        .send()
+        .await;
 
-            println!("{:#?}", resp.status());
-
-            match resp.status() {
+    match resp {
+        Ok(r) => {
+            match r.status() {
                 // 200
                 reqwest::StatusCode::OK => {
-                    println!("Success!");
-                    let resp_200 = resp.text().await; //.json::<POSTAPIResponse>().await?;
-                    println!("resp_200: {:#?}", resp_200);
-
-                    let json_val: serde_json::Value =
-                        serde_json::from_str(&resp_200.unwrap()).unwrap();
-                    println!("json_val: {:#?}", json_val);
-
-                    let status = json_val.get("error").unwrap();
-                    let error_code = status.get("code").unwrap();
-                    println!("error_code: {}", error_code);
-
-                    match error_code.to_string().as_str() {
-                        "-32602" => {
-                            println!("-32602");
-                        }
-
-                        _ => {
-                            println!("fun");
-                        }
-                    }
-
-                    let val = json_val.get("result").unwrap();
-                    println!("rpc_modules: {}", val);
-
-                    ()
-                    // Ok(())
-                }
-                // 403
-                reqwest::StatusCode::FORBIDDEN => {
-                    warn!("Got 403! FORBIDDEN");
-                    let resp_403 = resp.json::<POSTAPIResponse>().await;
-
-                    println!("{:#?}", resp_403);
-                    ()
-                    // Ok(())
-                }
-                // 404
-                reqwest::StatusCode::NOT_FOUND => {
-                    warn!("Got 404! Haven't found resource!");
-                    let resp_404 = resp.json::<POSTAPIResponse>().await;
-                    println!("{:#?}", resp_404);
-                    ()
-                    // Ok(())
-                }
-                // 405
-                reqwest::StatusCode::METHOD_NOT_ALLOWED => {
-                    warn!("Got 405! METHOD_NOT_ALLOWED");
-                    let resp_405 = resp.json::<POSTAPIResponse>().await;
-                    println!("{:#?}", resp_405);
-                    ()
-                    // Ok(())
-                }
-                // 429
-                reqwest::StatusCode::TOO_MANY_REQUESTS => {
-                    warn!("Got 429! ");
-                    let resp_429 = resp.json::<POSTAPIResponse>().await;
-                    println!("Got {:#?} TOO_MANY_REQUESTS", resp_429);
-                    ()
-                    // Ok(())
-                }
-                // 500
-                reqwest::StatusCode::INTERNAL_SERVER_ERROR => {
-                    warn!("Status 500! Internal server error!");
-                    let resp_500 = resp.json::<POSTAPIResponse>().await;
-                    println!("{:#?}", resp_500);
-                    ()
-                    // Ok(())
+                    println!("Response for method - {}: {:?}", method, r);
+                    println!("");
                 }
                 _ => {
-                    let line = resp.status().to_string();
-                    writeln!(&mut f, "{}\n", line);
-                    ()
-                    // Ok(())
-
-                    // panic!("this shouldn't happen");
+                    println!("Response status for method - {}: {}", method, r.status());
+                    println!("");
                 }
             }
+        }
+        Err(e) => {
+            println!("Error: {}", e);
+            let url = e.url();
+            let source = e.source();
+            println!("");
+
+            // let record: String = url.unwrap().to_string() + " - " + &source.unwrap().to_string();
+
+            // println!("{} - {:?}", url.unwrap().to_string(), source);
+
+            // if !is_exist("http_errors.log".to_string(), &record) {
+            //     println!("{} - {:?}", url.unwrap().to_string(), source);
+            // }
         }
     }
 }
 
+fn is_exist(file_path: String, record: &String) -> bool {
+    let file = File::open(file_path).unwrap();
+    let reader = BufReader::new(file);
+
+    for line in reader.lines() {
+        if line.unwrap().contains(record) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    false
+}
+
+fn is_processed(uri: &String) -> bool {
+    let files = Vec::from([
+        "0_rpc_errors.log",
+        "http_errors.log",
+        "nodes_errors.log",
+        "nodes_response_error.log",
+        "nodes_rpc_modules.log",
+        "32001_rpc_errors.log",
+        "32601_rpc_errors.log",
+    ]);
+
+    let mut res = false;
+
+    for f in files {
+        let file = File::open(f).unwrap();
+        let reader = BufReader::new(file);
+
+        for line in reader.lines() {
+            if line.unwrap().contains(uri) {
+                res = true;
+            } else {
+            }
+        }
+    }
+    res
+}
+
+async fn write_error_to_file(file_path: File, uri: String, status: StatusCode, response: Response) {
+    if let Err(resp_error) = response.json::<POSTAPIResponse>().await {
+        let record: String = uri + " - " + &status.to_string() + " - " + &resp_error.to_string();
+
+        if !is_exist("nodes_errors.log".to_string(), &record) {
+            writeln!(&file_path, "{}", record).unwrap();
+        }
+    } else {
+        println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    }
+}
+
+fn aggregate_error(uri: String, status_code: String, status_message: String) {
+    println!("status_code: {}", status_code);
+
+    let mut file_0 = OpenOptions::new()
+        .write(true)
+        .append(true)
+        // .truncate(true)
+        .open("0_rpc_errors.log")
+        .unwrap();
+
+    let mut file_32001 = OpenOptions::new()
+        .write(true)
+        .append(true)
+        // .truncate(true)
+        .open("32001_rpc_errors.log")
+        .unwrap();
+
+    let mut file_32601 = OpenOptions::new()
+        .write(true)
+        .append(true)
+        // .truncate(true)
+        .open("32601_rpc_errors.log")
+        .unwrap();
+
+    if status_code == "-32601".to_string() {
+        if !is_exist("32601_rpc_errors.log".to_string(), &uri) {
+            writeln!(&file_32601, "{} - {}", uri, status_message).unwrap();
+        }
+    } else if status_code == "-32001".to_string() {
+        if !is_exist("32001_rpc_errors.log".to_string(), &uri) {
+            writeln!(&file_32001, "{} - {}", uri, status_message).unwrap();
+        }
+    } else {
+        if !is_exist("0_rpc_errors.log".to_string(), &uri) {
+            writeln!(&file_0, "{} - {}", uri, status_message).unwrap();
+        }
+    }
+}
+
+pub fn get_correct_nodes_from_file() -> Vec<String> {
+    let mut nodes: Vec<String> = Vec::from(["".to_string()]);
+
+    let file = File::open("nodes_rpc_modules.log").unwrap();
+    let reader = BufReader::new(file);
+
+    for line in reader.lines() {
+        let l = line.unwrap().to_owned();
+        let (a, b) = l.split_once(char::is_whitespace).unwrap();
+        nodes.push(a.clone().to_string().to_owned());
+    }
+
+    return nodes;
+}
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,0 +1,12 @@
+https://ethereum-rpc.publicnode.com - {"eth":"1.0","net":"1.0","rpc":"1.0","txpool":"1.0","web3":"1.0"}
+https://eth.drpc.org - {"debug":"1.0","drpc":"1.0","erigon":"1.0","eth":"1.0","net":"1.0","trace":"1.0","txpool":"1.0","web3":"1.0"}
+https://node.expanse.tech - {"eth":"1.0","exp":"1.0","net":"1.0","rpc":"1.0","web3":"1.0"}
+https://rpc.dome.cloud - {"debug":"1.0","erigon":"1.0","eth":"1.0","net":"1.0","ots":"1.0","rpc":"1.0","trace":"1.0","txpool":"1.0","web3":"1.0"}
+https://pyrus2.ubiqscan.io - {"eth":"1.0","net":"1.0","rpc":"1.0","web3":"1.0"}
+https://optimism-rpc.publicnode.com - {"debug":"1.0","eth":"1.0","net":"1.0","rpc":"1.0","txpool":"1.0","web3":"1.0"}
+https://optimism.drpc.org - {"debug":"1.0","eth":"1.0","net":"1.0","optimism":"1.0","rollup":"1.0","trace":"1.0","txpool":"1.0","web3":"1.0"}
+https://api.metadium.com/prod - {"debug":"1.0","eth":"1.0","net":"1.0","personal":"1.0","rpc":"1.0","web3":"1.0"}
+https://api.metadium.com/dev - {"debug":"1.0","eth":"1.0","net":"1.0","personal":"1.0","rpc":"1.0","txpool":"1.0","web3":"1.0"}
+https://flare-api.flare.network/ext/C/rpc - {"eth":"1.0","net":"1.0","rpc":"1.0","web3":"1.0"}
+https://flare.rpc.thirdweb.com - {"admin":"1.0","debug":"1.0","eth":"1.0","net":"1.0","personal":"1.0","rpc":"1.0","snowman":"1.0","txpool":"1.0","web3":"1.0"}
+https://rpc.ankr.com/flare - {"admin":"1.0","debug":"1.0","eth":"1.0","net":"1.0","personal":"1.0","rpc":"1.0","snowman":"1.0","txpool":"1.0","web3":"1.0"}

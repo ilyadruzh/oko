@@ -1,0 +1,286 @@
+https://api.mycryptoapi.com/eth - 403 Forbidden - error decoding response body
+https://rpc.blocknative.com/boost - 403 Forbidden - error decoding response body
+https://rpc.mevblocker.io - 406 Not Acceptable - error decoding response body
+https://mainnet.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://rpc.blocknative.com/boost - 403 Forbidden - error decoding response body
+https://mainnet.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://rpc.blocknative.com/boost - 403 Forbidden - error decoding response body
+https://rpc.mevblocker.io - 406 Not Acceptable - error decoding response body
+https://rpc.mevblocker.io/fast - 406 Not Acceptable - error decoding response body
+https://rpc.mevblocker.io/noreverts - 406 Not Acceptable - error decoding response body
+https://rpc.mevblocker.io/fullprivacy - 406 Not Acceptable - error decoding response body
+https://ropsten.infura.io/v3/${INFURA_API_KEY} - 410 Gone - error decoding response body
+https://rinkeby.infura.io/v3/${INFURA_API_KEY} - 403 Forbidden - error decoding response body
+https://goerli.infura.io/v3/${INFURA_API_KEY} - 410 Gone - error decoding response body
+https://ethereum-goerli-rpc.publicnode.com - 503 Service Unavailable - error decoding response body
+https://goerli.gateway.tenderly.co - 404 Not Found - error decoding response body
+https://rpc.thaichain.org - 502 Bad Gateway - error decoding response body
+https://mainnet.optimism.io - 403 Forbidden - error decoding response body
+https://mainnet.zkevm.cronos.org - 403 Forbidden - error decoding response body
+https://rpc.nativ3.network - 520 <unknown status code> - error decoding response body
+https://rpc.sx.technology - 403 Forbidden - error decoding response body
+https://optimism-goerli-rpc.publicnode.com - 503 Service Unavailable - error decoding response body
+https://optimism-goerli.gateway.tenderly.co - 404 Not Found - error decoding response body
+https://optimism-testnet.drpc.org - 400 Bad Request - error decoding response body
+https://mainnet-rpc.vrd.network - 521 <unknown status code> - error decoding response body
+https://rpc.publicgoods.network - 404 Not Found - error decoding response body
+https://rpc.acuteangle.com - 502 Bad Gateway - error decoding response body
+https://rollux.rpc.syscoin.org - 403 Forbidden - error decoding response body
+https://rpc.toronto.sx.technology - 403 Forbidden - error decoding response body
+https://rpc.redstonechain.com - 403 Forbidden - error decoding response body
+https://subnets.avax.network/portal-fantasy/testnet/rpc - 405 Method Not Allowed - error decoding response body
+https://rpc-zkevm.thefirechain.com - 521 <unknown status code> - error decoding response body
+https://eth.jegotrip.net - 502 Bad Gateway - error decoding response body
+https://s0-testnet.garizon.net/rpc - 404 Not Found - error decoding response body
+https://s1-testnet.garizon.net/rpc - 404 Not Found - error decoding response body
+https://s2-testnet.garizon.net/rpc - 404 Not Found - error decoding response body
+https://s3-testnet.garizon.net/rpc - 404 Not Found - error decoding response body
+https://rinia-rpc1.thefirechain.com - 502 Bad Gateway - error decoding response body
+https://sepolia.mode.network - 404 Not Found - error decoding response body
+https://rpc-testnet-pulsechain.g4mm4.io - 403 Forbidden - error decoding response body
+https://rpc.lyra.finance - 404 Not Found - error decoding response body
+https://rpc.testnet.ethxy.com - 403 Forbidden - error decoding response body
+https://rpc.eliberty.ngo - 403 Forbidden - error decoding response body
+https://subnets.avax.network/mintara/testnet/rpc - 405 Method Not Allowed - error decoding response body
+https://subnets.avax.network/mintara/mainnet/rpc - 405 Method Not Allowed - error decoding response body
+https://dymension-evm.blockpi.network/v1/rpc/public - 403 Forbidden - error decoding response body
+https://rpc-core.icecreamswap.com - 403 Forbidden - error decoding response body
+https://rpc.api.lisk.com - 403 Forbidden - error decoding response body
+https://plex-rpc.plexfinance.us - 502 Bad Gateway - error decoding response body
+https://testnet-rpc.buildonhybrid.com - 502 Bad Gateway - error decoding response body
+https://testapi.cicscan.com - 525 <unknown status code> - error decoding response body
+https://moonbeam.public.blastapi.io - 400 Bad Request - error decoding response body
+https://moonriver.public.blastapi.io - 400 Bad Request - error decoding response body
+https://moonbase-alpha.public.blastapi.io - 400 Bad Request - error decoding response body
+https://test.doschain.com/jsonrpc - 404 Not Found - error decoding response body
+https://mainnet.zakumi.io - 502 Bad Gateway - error decoding response body
+https://polygon-zkevm-testnet.drpc.org - 400 Bad Request - error decoding response body
+https://beagle.chat/eth - 404 Not Found - error decoding response body
+https://rpc.gravity.xyz - 404 Not Found - error decoding response body
+https://dataseed1.btachain.com/ - 521 <unknown status code> - error decoding response body
+https://gobi-rpc.horizenlabs.io/ethv1 - 403 Forbidden - error decoding response body
+https://sepolia-testnet-rpc.mintchain.io - 404 Not Found - error decoding response body
+https://rpc.ludan.org/ - 503 Service Unavailable - error decoding response body
+https://geth.anytype.io - 400 Bad Request - error decoding response body
+https://testnet.rpc.metall2.com - 404 Not Found - error decoding response body
+https://rpc.metall2.com - 404 Not Found - error decoding response body
+https://sepolia-rpc.zkbase.app - 502 Bad Gateway - error decoding response body
+https://mainnet-data.rubychain.io/ - 521 <unknown status code> - error decoding response body
+https://mainnet.rubychain.io/ - 521 <unknown status code> - error decoding response body
+https://tsfapi.europool.me - 400 Bad Request - error decoding response body
+https://testnet.bitcichain.com - 502 Bad Gateway - error decoding response body
+https://testnet-rchain.rubychain.io/ - 521 <unknown status code> - error decoding response body
+https://rpc.dexilla.com - 404 Not Found - error decoding response body
+https://rpc.metatime.com/eleanor - 404 Not Found - error decoding response body
+https://rpc.hubble.exchange - 530 <unknown status code> - error decoding response body
+https://rpc.ankr.com/dogechain - 400 Bad Request - error decoding response body
+https://rpc-mainnet-algorand-rollup.a1.milkomeda.com - 503 Service Unavailable - error decoding response body
+https://rpc.dev.publicmint.io:8545 - 503 Service Unavailable - error decoding response body
+https://rpc.tst.publicmint.io:8545 - 503 Service Unavailable - error decoding response body
+https://rpc.publicmint.io:8545 - 502 Bad Gateway - error decoding response body
+https://rpc.alephzero-testnet.gelato.digital - 403 Forbidden - error decoding response body
+https://market.bigsb.io - 403 Forbidden - error decoding response body
+https://prod-forge.prod.findora.org:8545/ - 503 Service Unavailable - error decoding response body
+https://rpc.kanda.animechain.ai - 403 Forbidden - error decoding response body
+https://kava-evm-testnet.rpc.thirdweb.com - 400 Bad Request - error decoding response body
+https://kava-evm.rpc.thirdweb.com - 400 Bad Request - error decoding response body
+https://vesuvius-rpc.litprotocol.com - 404 Not Found - error decoding response body
+https://rpc0.altcoinchain.org/rpc - 502 Bad Gateway - error decoding response body
+https://rpc.testnet.rss3.io - 403 Forbidden - error decoding response body
+https://coredata-mainnet.hybridchain.ai/ - 521 <unknown status code> - error decoding response body
+https://rpc-mainnet.hybridchain.ai - 521 <unknown status code> - error decoding response body
+https://goerli.node1.karak.network - 503 Service Unavailable - error decoding response body
+https://testnet-rpc.timenetwork.io - 502 Bad Gateway - error decoding response body
+https://rpc.nanon.network - 403 Forbidden - error decoding response body
+https://goerli.boba.network/ - 404 Not Found - error decoding response body
+https://testnet-chain.xenonchain.com/ - 405 Method Not Allowed - error decoding response body
+https://testnet-dev.xenonchain.com/ - 405 Method Not Allowed - error decoding response body
+https://rpc.evolveblockchain.io - 521 <unknown status code> - error decoding response body
+https://node.botanixlabs.dev - 403 Forbidden - error decoding response body
+https://rpc.empirenetwork.io - 404 Not Found - error decoding response body
+https://testnet-rpc-archive.tangle.tools - 526 <unknown status code> - error decoding response body
+https://rpc-zkevm-ghostrider.thefirechain.com - 521 <unknown status code> - error decoding response body
+https://www.dracscan.com/rpc - 405 Method Not Allowed - error decoding response body
+https://mainnet.yuan.org/eth - 502 Bad Gateway - error decoding response body
+https://evm-rpc.testnet.humans.zone - 502 Bad Gateway - error decoding response body
+https://rpc-merlin.rockx.com - 404 Not Found - error decoding response body
+https://rpc.sepolia-api.lisk.com - 403 Forbidden - error decoding response body
+https://l2-orderly-l2-4460-sepolia-8tc3sd7dvy.t.conduit.xyz - 404 Not Found - error decoding response body
+https://testnet.emoney.network/ - 403 Forbidden - error decoding response body
+https://chain-rpc.gold.dev - 404 Not Found - error decoding response body
+https://rpc-evm-testnet.venidium.io - 521 <unknown status code> - error decoding response body
+https://rpc.testnet.mantle.xyz - 400 Bad Request - error decoding response body
+https://rpc-sic-testnet-zvr7tlkzsi.t.conduit.xyz - 404 Not Found - error decoding response body
+https://rpc-coordinape-testnet-vs9se3oc4v.t.conduit.xyz - 404 Not Found - error decoding response body
+https://rpc-charmverse-testnet-g6blnaebes.t.conduit.xyz - 404 Not Found - error decoding response body
+https://rpc-superloyalty-testnet-1m5gwjbsv1.t.conduit.xyz - 404 Not Found - error decoding response body
+https://rpc.ham.fun - 403 Forbidden - error decoding response body
+https://rpc1.bahamut.io - 403 Forbidden - error decoding response body
+https://rpc2.bahamut.io - 403 Forbidden - error decoding response body
+https://rpc.main.smartlayer.network - 502 Bad Gateway - error decoding response body
+https://nodetestnet-station-one.tritanium.network/ - 521 <unknown status code> - error decoding response body
+https://nodetestnet-station-two.tritanium.network/ - 521 <unknown status code> - error decoding response body
+https://testnet.vexascan.com/evmapi - 403 Forbidden - error decoding response body
+https://rpc.treschain.io/ - 502 Bad Gateway - error decoding response body
+https://node-api.alp.uptn.io/v1/ext/rpc - 503 Service Unavailable - error decoding response body
+https://node-api.uptn.io/v1/ext/rpc - 400 Bad Request - error decoding response body
+https://testnet-rpc.scolcoin.com - 502 Bad Gateway - error decoding response body
+https://rpc.oxscan.io - 404 Not Found - error decoding response body
+https://seed0.polysmartchain.com/ - 404 Not Found - error decoding response body
+https://seed1.polysmartchain.com/ - 404 Not Found - error decoding response body
+https://seed2.polysmartchain.com/ - 404 Not Found - error decoding response body
+https://zetachain-mainnet.public.blastapi.io - 400 Bad Request - error decoding response body
+https://zetachain-testnet.public.blastapi.io - 400 Bad Request - error decoding response body
+https://eon-rpc.horizenlabs.io/ethv1 - 403 Forbidden - error decoding response body
+https://validator-mainnet.orenium.org - 503 Service Unavailable - error decoding response body
+https://rpc-oracle-mainnet.orenium.org - 503 Service Unavailable - error decoding response body
+https://portalmainnet.orenium.org - 503 Service Unavailable - error decoding response body
+https://rpc.kinto.xyz/http - 403 Forbidden - error decoding response body
+https://u0ma6t6heb:KDNwOsRDGcyM2Oeui1p431Bteb4rvcWkuPgQNHwB4FM@u0xy4x6x82-u0e2mg517m-rpc.us0-aws.kaleido.io/ - 404 Not Found - error decoding response body
+https://rpc.blocktonscan.com/ - 400 Bad Request - error decoding response body
+https://mainnet.base.org/ - 403 Forbidden - error decoding response body
+https://developer-access-mainnet.base.org/ - 403 Forbidden - error decoding response body
+https://ws.json-rpc.evm.iotaledger.net - 405 Method Not Allowed - error decoding response body
+https://mainnet.lumio.io/ - 403 Forbidden - error decoding response body
+https://rpc-dev-testnet.orenium.org/ - 405 Method Not Allowed - error decoding response body
+https://rpc-testnet.orenium.org/ - 405 Method Not Allowed - error decoding response body
+https://rpc-orc.oredex.finance - 405 Method Not Allowed - error decoding response body
+https://testnet-rpc.oredex.finance - 405 Method Not Allowed - error decoding response body
+https://oredex-node.oredex.finance - 405 Method Not Allowed - error decoding response body
+https://sepolia-dela.deperp.com - 404 Not Found - error decoding response body
+https://testnet.bnb.boba.network - 403 Forbidden - error decoding response body
+https://testnet-msc.mindchain.info/ - 502 Bad Gateway - error decoding response body
+https://mind-smart-chain.rpc.thirdweb.com - 207 Multi-Status - error decoding response body
+http://geth.free.idcfengye.com - 405 Method Not Allowed - error decoding response body
+https://gwangju.worldland.foundation - 403 Forbidden - error decoding response body
+https://rpcna.quadrans.io - 503 Service Unavailable - error decoding response body
+https://api.testnet.abs.xyz - 403 Forbidden - error decoding response body
+https://testnet-rpc.sardisnetwork.com - 523 <unknown status code> - error decoding response body
+https://zerorpc.singularity.gold - 403 Forbidden - error decoding response body
+https://node3.fibo-api.asia - 525 <unknown status code> - error decoding response body
+https://node4.fibo-api.asia - 525 <unknown status code> - error decoding response body
+https://node5.fibo-api.asia - 525 <unknown status code> - error decoding response body
+https://node6.fibo-api.asia - 525 <unknown status code> - error decoding response body
+https://node7.fibo-api.asia - 525 <unknown status code> - error decoding response body
+https://node4.fibo-rpc.asia - 525 <unknown status code> - error decoding response body
+https://node5.fibo-rpc.asia - 525 <unknown status code> - error decoding response body
+https://node6.fibo-rpc.asia - 525 <unknown status code> - error decoding response body
+https://node7.fibo-rpc.asia - 525 <unknown status code> - error decoding response body
+https://rpc.blgchain.com - 503 Service Unavailable - error decoding response body
+https://rpc.rss3.io - 403 Forbidden - error decoding response body
+https://rpc-sepolia.gravity.xyz - 404 Not Found - error decoding response body
+https://rpc.dev.immutable.com - 403 Forbidden - error decoding response body
+https://api.testnet.evm.eosnetwork.com - 403 Forbidden - error decoding response body
+https://rpc.garnetchain.com - 403 Forbidden - error decoding response body
+https://rpc.onchainpoints.xyz - 404 Not Found - error decoding response body
+https://rpc-onchain-points-8n0qkkpr2j.t.conduit.xyz/{CONDUIT_API_KEY} - 404 Not Found - error decoding response body
+https://subnets.avax.network/eclipse/testnet/rpc - 405 Method Not Allowed - error decoding response body
+https://api.evm.eosnetwork.com - 403 Forbidden - error decoding response body
+https://rpc.unreal-orbit.gelato.digital - 403 Forbidden - error decoding response body
+https://magnet-rpc.magport.io/ - 404 Not Found - error decoding response body
+https://subnets.avax.network/jono11/testnet/rpc - 405 Method Not Allowed - error decoding response body
+https://sepolia-rpc.nanon.network - 403 Forbidden - error decoding response body
+https://sepolia.boba.network - 403 Forbidden - error decoding response body
+https://cerium-rpc.canxium.net - 502 Bad Gateway - error decoding response body
+https://api.esn.gonspool.com - 403 Forbidden - error decoding response body
+https://rpc.icecreamswap.com - 403 Forbidden - error decoding response body
+https://chainrpc.com - 403 Forbidden - error decoding response body
+https://serverrpc.com - 403 Forbidden - error decoding response body
+https://rpc.slingshotdao.com - 404 Not Found - error decoding response body
+https://mainnet.mode.network - 404 Not Found - error decoding response body
+https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY} - 401 Unauthorized - error decoding response body
+https://wireshape-floripa-testnet.rpc.thirdweb.com - 207 Multi-Status - error decoding response body
+https://alpha-us-http-geth.lumoz.org - 523 <unknown status code> - error decoding response body
+https://mainnet-rpc.sardisnetwork.com - 403 Forbidden - error decoding response body
+https://rpc.electroneum.com - 403 Forbidden - error decoding response body
+https://sepolia.superseed.xyz - 404 Not Found - error decoding response body
+http://testnet.toronet.org/rpc - 404 Not Found - error decoding response body
+https://rpc-test.photonchain.io - 404 Not Found - error decoding response body
+https://rpc.titan.tokamak.network - 403 Forbidden - error decoding response body
+https://bnb.boba.network - 403 Forbidden - error decoding response body
+https://replica.bnb.boba.network - 403 Forbidden - error decoding response body
+https://sepolia.publicgoods.network - 404 Not Found - error decoding response body
+https://linea-goerli.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://linea-sepolia.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://linea-mainnet.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://rpc.gobob.xyz - 404 Not Found - error decoding response body
+https://bob-mainnet.public.blastapi.io - 400 Bad Request - error decoding response body
+https://rpc.vecno.org - 521 <unknown status code> - error decoding response body
+https://u0tnafcv6j:o2T045sxuCNXL878RDQLp5__Zj-es2cvdjtgkl4etn0@u0v7kwtvtg-u0wj114sve-rpc.us0-aws.kaleido.io/ - 404 Not Found - error decoding response body
+https://rpc.apex.proofofplay.com - 404 Not Found - error decoding response body
+http://toronet.org/rpc - 404 Not Found - error decoding response body
+https://subnets.avax.network/amplify/testnet/rpc - 405 Method Not Allowed - error decoding response body
+https://subnets.avax.network/bulletin/testnet/rpc - 405 Method Not Allowed - error decoding response body
+https://subnets.avax.network/conduit/testnet/rpc - 405 Method Not Allowed - error decoding response body
+https://rpc-mumbai.maticvigil.com - 403 Forbidden - error decoding response body
+https://polygon-mumbai-bor-rpc.publicnode.com - 503 Service Unavailable - error decoding response body
+https://polygon-mumbai.gateway.tenderly.co - 404 Not Found - error decoding response body
+https://blastl2-mainnet.public.blastapi.io - 400 Bad Request - error decoding response body
+https://rpc.testnet.xprotocol.org - 404 Not Found - error decoding response body
+https://goerli.base.org - 503 Service Unavailable - error decoding response body
+https://base-goerli.gateway.tenderly.co - 404 Not Found - error decoding response body
+https://base-goerli-rpc.publicnode.com - 503 Service Unavailable - error decoding response body
+https://sepolia.base.org - 403 Forbidden - error decoding response body
+https://rpc-testnet.unit0.dev - 502 Bad Gateway - error decoding response body
+https://rpc-camp-network-4xje7wy105.t.conduit.xyz - 404 Not Found - error decoding response body
+https://rpc.stratovm.io - 404 Not Found - error decoding response body
+https://rpc-dependent-emerald-whippet-gh6kch3nen.t.conduit.xyz - 404 Not Found - error decoding response body
+https://node.greenchain.app/rpc/ - 404 Not Found - error decoding response body
+https://testnet-rpc.eliberty.ngo - 403 Forbidden - error decoding response body
+http://jrpc.mainnet.quarkchain.io:38391 - 404 Not Found - error decoding response body
+https://rpc.crystaleum.org - 502 Bad Gateway - error decoding response body
+http://jrpc.devnet.quarkchain.io:38391 - 404 Not Found - error decoding response body
+https://taiko-katla.drpc.org - 400 Bad Request - error decoding response body
+https://yellowstone-rpc.litprotocol.com - 404 Not Found - error decoding response body
+https://jellie-rpc.twala.io/ - 503 Service Unavailable - error decoding response body
+https://sepolia.zillnet.io/rpc - 403 Forbidden - error decoding response body
+https://filecoin-calibration.chainup.net/rpc/v1 - 500 Internal Server Error - error decoding response body
+https://calibration.filfox.info/rpc/v1 - 500 Internal Server Error - error decoding response body
+https://rpctest.nativ3.network - 520 <unknown status code> - error decoding response body
+https://rpc-testnet.uniport.network - 521 <unknown status code> - error decoding response body
+https://rpc.uniport.network - 521 <unknown status code> - error decoding response body
+https://mainnet-rpc.tipboxcoin.net - 521 <unknown status code> - error decoding response body
+https://arbitrum-goerli.publicnode.com - 503 Service Unavailable - error decoding response body
+https://arbitrum-sepolia.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://weelinknode1c.gw002.oneitfarm.com - 502 Bad Gateway - error decoding response body
+https://baas-rpc.luniverse.io:18545?lChainId=1641349324562974539 - 400 Bad Request - error decoding response body
+https://brnkc-mainnet1.bearnetwork.net - 502 Bad Gateway - error decoding response body
+https://rpc.open-campus-codex.gelato.digital - 403 Forbidden - error decoding response body
+https://bob-sepolia.rpc.gobob.xyz - 404 Not Found - error decoding response body
+https://chain.deptofgood.com - 403 Forbidden - error decoding response body
+https://infragrid.v.network/ethereum/compatible - 404 Not Found - error decoding response body
+https://subnets.avax.network/jono12/testnet/rpc - 401 Unauthorized - error decoding response body
+https://host-76-74-28-226.contentfabric.io/eth/ - 404 Not Found - error decoding response body
+https://rpc.startale.com/zkatana - 404 Not Found - error decoding response body
+https://astar-zkatana.drpc.org - 400 Bad Request - error decoding response body
+https://manta-pacific-testnet.drpc.org - 400 Bad Request - error decoding response body
+https://altar-rpc.ceremonies.ai/ - 404 Not Found - error decoding response body
+https://ws-jsonrpc.imversed.network - 400 Bad Request - error decoding response body
+https://rpc.anwang.com - 405 Method Not Allowed - error decoding response body
+https://rpc-testnet.anwang.com - 405 Method Not Allowed - error decoding response body
+https://rpc.zora.energy/ - 404 Not Found - error decoding response body
+https://sepolia.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://sepolia.optimism.io - 403 Forbidden - error decoding response body
+https://mande-mainnet.public.blastapi.io - 400 Bad Request - error decoding response body
+https://rpc.dbcwallet.io - 502 Bad Gateway - error decoding response body
+https://rpc2.qkiscan.io - 502 Bad Gateway - error decoding response body
+https://rpc3.qkiscan.io - 502 Bad Gateway - error decoding response body
+https://rpcv2-testnet.ancient8.gg - 404 Not Found - error decoding response body
+https://rpc.sx-rollup-testnet.t.raas.gelato.cloud - 403 Forbidden - error decoding response body
+https://rpc.opcelestia-raspberry.gelato.digital - 403 Forbidden - error decoding response body
+https://devnet.rollup.neonevm.org/ - 404 Not Found - error decoding response body
+https://testnet.gather.network - 530 <unknown status code> - error decoding response body
+https://devnet.gather.network - 530 <unknown status code> - error decoding response body
+https://rpc.degen.tips - 404 Not Found - error decoding response body
+https://rpc.ancient8.gg - 404 Not Found - error decoding response body
+https://sepolia.rpc.zora.energy - 404 Not Found - error decoding response body
+https://rpc.raptorchain.io/web3 - 422 Unprocessable Entity - error decoding response body
+https://rpc-testnet.ancient8.gg - 404 Not Found - error decoding response body
+https://palm-testnet.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://palm-testnet.public.blastapi.io - 400 Bad Request - error decoding response body
+https://palm-mainnet.infura.io/v3/${INFURA_API_KEY} - 401 Unauthorized - error decoding response body
+https://palm-mainnet.public.blastapi.io - 400 Bad Request - error decoding response body
+https://testnet.gitswarm.com:2096 - 403 Forbidden - error decoding response body
+https://rpc.arb-blueberry.gelato.digital - 403 Forbidden - error decoding response body
+https://mainnet.ipdc.io/ - 503 Service Unavailable - error decoding response body

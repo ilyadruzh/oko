@@ -3,11 +3,12 @@ pub mod rest_api;
 pub mod scan;
 
 use clap::{Arg, Command};
-use scan::evm_net_scan::start_scan_evm_networks;
+use scan::evm_net_scan::{call_rpc_method, get_correct_nodes_from_file, start_scan_evm_networks};
 use std::boxed::Box;
 use std::path::PathBuf;
-use std::process;
+use std::{process, thread};
 
+use crate::database::evm_db::get_nodes_from_chainid_list;
 use crate::scan::blockchain::parser::chain::ChainStorage;
 use crate::scan::blockchain::parser::types::{Bitcoin, CoinType};
 use crate::scan::blockchain::parser::BlockchainParser;
@@ -19,7 +20,6 @@ use crate::scan::callbacks::unspentcsvdump::UnspentCsvDump;
 use crate::scan::callbacks::Callback;
 use crate::scan::common::logger::SimpleLogger;
 use crate::scan::common::utils;
-use crate::database::evm_db::get_nodes_from_chainid_list;
 
 use crate::scan::types::*;
 
@@ -91,16 +91,21 @@ fn command() -> Command {
 
 #[tokio::main]
 async fn main() {
+    start_scan_evm_networks();
 
-    start_scan_evm_networks(true);
-
+    // for node_url in get_correct_nodes_from_file() {
+    //     thread::spawn(move || {
+    //         let _ = call_rpc_method(&node_url, "txpool_status".to_string());
+    //     })
+    //     .join()
+    //     .expect("Thread panicked")
+    // }
 
     // let test_client: reqwest::Client = reqwest::Client::new();
     // const uri: &str =
     //     "https://services.tokenview.io/vipapi/nodeservice/eth?apikey=qVHq2o6jpaakcw3lRstl";
 
     // let _result = get_all_rpc_methods(&test_client, uri);
-
 
     // Ok(())
 
