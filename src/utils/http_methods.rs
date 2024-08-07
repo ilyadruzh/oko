@@ -5,9 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
 
-use evm_scan::{GETAPIResponse, JSONResponse};
-
-use crate::scan::evm_scan;
+use crate::scan::evm::types::{GETAPIResponse, JSONResponse};
 
 #[tokio::main]
 pub async fn get(client: &Client, uri: &str) -> Result<GETAPIResponse, Box<dyn std::error::Error>> {

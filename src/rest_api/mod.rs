@@ -1,7 +1,4 @@
-use crate::database::evm_db::{
-    add_node_to_evm_nodes, delete_json, delete_node_to_evm_nodes, get_evm_nodes, json_body,
-    post_json, update_node_to_evm_nodes, Store,
-};
+use crate::database::evm_db::Store;
 
 use warp::Filter;
 

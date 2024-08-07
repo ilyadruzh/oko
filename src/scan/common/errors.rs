@@ -1,4 +1,3 @@
-use bitcoin::script;
 // use crate::scan::bitcoin::blockchain::proto::script;
 use rusty_leveldb::Status;
 use std::convert::From;

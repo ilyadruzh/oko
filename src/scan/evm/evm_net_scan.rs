@@ -7,66 +7,76 @@ use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::{self, File, OpenOptions};
-use std::io::{BufRead, BufReader, Write};
+use std::io::{self, BufRead, BufReader, Write};
+use std::path::PathBuf;
 use std::thread;
 use std::time::Duration;
 
 const TIMEOUT: Duration = Duration::from_secs(10);
-const HTTP_ERRORS: &str = "logs/http_errors.log";
-const NET_ERRORS: &str = "logs/net_errors.log";
-const NODE_INFO: &str = "logs/node_info.log";
-const UNTYPICAL_RESPONSE: &str = "logs/untypical_response.log";
-const DEBUG_NODES: &str = "logs/debug_nodes.log";
-const RPC_ERROR_32001: &str = "logs/rpc_error_32001.log";
-const RPC_ERROR_32601: &str = "logs/rpc_error_32061.log";
-const RPC_ERROR_OTHER: &str = "logs/rpc_error_others.log";
+const HTTP_ERRORS: &str = "http_errors.log";
+const NET_ERRORS: &str = "net_errors.log";
+const NODE_INFO: &str = "node_info.log";
+const UNTYPICAL_RESPONSE: &str = "untypical_response.log";
+const DEBUG_NODES: &str = "debug_nodes.log";
+const RPC_ERROR_32001: &str = "rpc_error_32001.log";
+const RPC_ERROR_32601: &str = "rpc_error_32061.log";
+const RPC_ERROR_OTHER: &str = "rpc_error_others.log";
 
-pub fn start_scan_evm_networks() {
+pub fn start_scan_evm_networks(rpc_modules: String, folder: String) {
+    println!("start_scan_evm_networks");
     let nodes = get_nodes_from_chainid_list();
 
-    let all_urls = nodes.len() + 1;
-    let mut count_urls = 0;
+    // let all_urls = nodes.len() + 1;
+    // let mut count_urls = 0;
 
     for n in nodes {
         for u in n.rpc {
             if false {
             } else {
+                if rpc_modules == "rpc_modules" {
+                    // count_urls += 1;
+                    // println!("{}", all_urls - count_urls);
+                    let val = folder.clone();
 
-                // count_urls += 1;
-                // println!("{}", all_urls - count_urls);
-                // // print!("{esc}c", esc = 27 as char);
+                    println!("this 1");
 
-                thread::spawn(move || {
-                    let _ = get_rpc_modules_async((&u).to_string());
-                })
-                .join()
-                .expect("Thread panicked")
+                    let _ = check_debug_set_head(&"".to_string(), "".to_string());
+
+                    thread::spawn(move || {
+                        // let _ = get_rpc_modules_async((&u).to_string(), val);
+                    })
+                    .join()
+                    .expect("Thread panicked")
+                }
             }
         }
     }
 }
 
 #[tokio::main]
-pub async fn get_rpc_modules_async(uri: String) -> Result<(), Box<dyn Error>> {
+pub async fn get_rpc_modules_async(uri: String, folder: String) -> Result<(), Box<dyn Error>> {
     let client: reqwest::Client = reqwest::Client::new();
 
     let mut map = HashMap::new();
 
-    let http_errors = open_file(HTTP_ERRORS.to_string(), true, false);
-    let mut net_errors = open_file(NET_ERRORS.to_string(), true, false);
-    let mut node_info = open_file(NODE_INFO.to_string(), true, false);
-    let mut untypical_response = open_file(UNTYPICAL_RESPONSE.to_string(), true, false);
-    let mut debug_nodes = open_file(DEBUG_NODES.to_string(), true, false);
+    let http_errors = open_file(folder.clone() + "/" + HTTP_ERRORS, true, false, true);
+    let mut net_errors = open_file(folder.clone() + "/" + NET_ERRORS, true, false, true);
+    let mut node_info = open_file(folder.clone() + "/" + NODE_INFO, true, false, true);
+    let mut untypical_response =
+        open_file(folder.clone() + "/" + UNTYPICAL_RESPONSE, true, false, true);
+    let mut debug_nodes = open_file(folder.clone() + "/" + DEBUG_NODES, true, false, true);
 
     map.insert("jsonrpc", "2.0");
     map.insert("method", "rpc_modules");
     // map.insert("params", "[]");
     map.insert("id", "67");
 
-    if is_processed(&uri) {
-        is_processed(&uri);
+    if is_processed(folder.clone(), &uri) {
+        is_processed(folder.clone(), &uri);
         return Ok(());
     }
+
+    let folder_dup = folder.clone();
 
     let resp = client
         .post(&uri)
@@ -121,6 +131,8 @@ pub async fn get_rpc_modules_async(uri: String) -> Result<(), Box<dyn Error>> {
                                     let web3_client = call_rpc_method(
                                         &uri.to_owned(),
                                         &"web3_clientVersion".to_string(),
+                                        &"".to_string(),
+                                        &folder.clone(),
                                     );
                                     writeln!(
                                         debug_nodes,
@@ -141,15 +153,17 @@ pub async fn get_rpc_modules_async(uri: String) -> Result<(), Box<dyn Error>> {
                     }
 
                     if let Some(status) = json_val.get("error") {
-                        println!("status: {}", status.to_string());
-
                         if status.to_string().eq_ignore_ascii_case("invalid method") {
-                            println!("invalid method");
                             return Ok(());
                         } else {
                             if let Some(status_code) = status.get("code") {
                                 let status_message = status.get("message").unwrap().to_string();
-                                aggregate_error(new_uri, status_code.to_string(), status_message);
+                                aggregate_error(
+                                    &folder_dup,
+                                    new_uri,
+                                    status_code.to_string(),
+                                    status_message,
+                                );
                             }
                         }
                     }
@@ -177,20 +191,17 @@ pub async fn get_rpc_modules_async(uri: String) -> Result<(), Box<dyn Error>> {
 }
 
 #[tokio::main]
-pub async fn call_rpc_method(uri: &String, method: &String) -> Result<Value, Box<dyn Error>> {
+pub async fn call_rpc_method(
+    uri: &String,
+    method: &String,
+    payload: &String,
+    folder: &String,
+) -> Result<Value, Box<dyn Error>> {
     let client: reqwest::Client = reqwest::Client::new();
     let mut map = HashMap::new();
-
     let mut value = json!(null);
-
-    let filepath = method.to_owned() + ".log";
-
-    let method_file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .append(true)
-        .open(&filepath)
-        .unwrap();
+    let filepath = folder.to_owned() + "/" + method + ".log";
+    let file = open_file(filepath.to_owned(), true, false, true);
 
     map.insert("jsonrpc", "2.0");
     map.insert("method", &method);
@@ -219,9 +230,14 @@ pub async fn call_rpc_method(uri: &String, method: &String) -> Result<Value, Box
 
                     if method == "web3_clientVersion" {
                         if let Some(res) = json_val.get("result") {
-                            println!("CALL {} with RESULT: {}", method, res.to_string());
-                            if !is_exist(filepath, &res.to_string()) {
-                                write_to_file(method_file, uri, &res.to_string()).await;
+                            println!(
+                                "CALL {} from {} with RESULT: {}",
+                                method,
+                                uri,
+                                res.to_string()
+                            );
+                            if !is_exist(filepath.clone(), &res.to_string()) {
+                                write_to_file(file, uri, &res.to_string()).await;
                             }
 
                             value = res.clone();
@@ -232,6 +248,16 @@ pub async fn call_rpc_method(uri: &String, method: &String) -> Result<Value, Box
                             let pending = txpool_status.get("pending");
                             println!("pending: {}", pending.unwrap().to_string());
                             return Ok(value);
+                        }
+                    } else if method == "eth_blockNumber" {
+                        if let Some(block_number) = json_val.get("result") {
+                            println!("block_number: {}", block_number);
+
+                            if !is_exist(filepath.clone(), &block_number.to_string()) {
+                                write_to_file(file, uri, &block_number.to_string()).await;
+                            }
+
+                            return Ok(block_number.clone());
                         }
                     }
 
@@ -256,23 +282,33 @@ pub async fn call_rpc_method(uri: &String, method: &String) -> Result<Value, Box
 }
 
 fn is_exist(file_path: String, record: &String) -> bool {
-    let file = File::open(file_path).unwrap();
-    let reader = BufReader::new(file);
+    if let Ok(file) = File::open(file_path) {
+        let reader = BufReader::new(file);
 
-    for line in reader.lines() {
-        if line.unwrap().contains(record) {
-            return true;
-        } else {
-            return false;
+        for line in reader.lines() {
+            if line.unwrap().contains(record) {
+                return true;
+            } else {
+                return false;
+            }
         }
+        false
+    } else {
+        false
     }
-    false
 }
 
-fn is_processed(uri: &String) -> bool {
+fn is_processed(folder: String, uri: &String) -> bool {
     let mut files = Vec::new();
 
-    let paths = fs::read_dir("./logs").unwrap();
+    let mut folder_path = &folder;
+    let default = "./logs/evm".to_string();
+
+    if folder == "".to_string() {
+        folder_path = &default;
+    }
+
+    let paths = fs::read_dir(folder_path).unwrap();
     for path in paths {
         // println!("Name: {}", path.unwrap().path().display());
         files.push(path.unwrap().path());
@@ -281,7 +317,7 @@ fn is_processed(uri: &String) -> bool {
     let mut res = false;
 
     for f in files {
-        let file = open_file(f.display().to_string(), false, true);
+        let file = open_file(f.display().to_string(), false, true, true);
         let reader = BufReader::new(file);
 
         for line in reader.lines() {
@@ -293,17 +329,18 @@ fn is_processed(uri: &String) -> bool {
     res
 }
 
-fn open_file(name: String, write: bool, read: bool) -> File {
+fn open_file(name: String, write: bool, read: bool, append: bool) -> File {
     let file = File::options()
         .create(true)
         .write(write)
         .read(read)
-        .append(true)
+        .append(append)
         .open(name) // TODO: called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
         .unwrap();
 
     return file;
 }
+
 async fn write_error_to_file(file_path: File, uri: String, status: StatusCode, response: Response) {
     if let Err(resp_error) = response.json::<POSTAPIResponse>().await {
         let record: String = uri + " - " + &status.to_string() + " - " + &resp_error.to_string();
@@ -322,32 +359,26 @@ async fn write_to_file(file_path: File, uri: &String, record: &String) {
     }
 }
 
-fn aggregate_error(uri: String, status_code: String, status_message: String) {
-    println!("status_code: {}", status_code);
+pub async fn update_chain_list() {
+    let resp = reqwest::get("https://chainid.network/chains.json")
+        .await
+        .expect("request failed");
+    let body = resp.text().await.expect("body invalid");
+    let mut file = open_file(
+        "src/database/chainid_network.json".to_string(),
+        true,
+        false,
+        false,
+    );
 
-    let file_0 = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .append(true)
-        // .truncate(true)
-        .open(RPC_ERROR_OTHER)
-        .unwrap();
+    // let mut out = File::create("src/database/chainid_network.json").expect("failed to create file");
+    io::copy(&mut body.as_bytes(), &mut file).expect("failed to copy content");
+}
 
-    let file_32001 = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .append(true)
-        // .truncate(true)
-        .open(RPC_ERROR_32601)
-        .unwrap();
-
-    let file_32601 = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .append(true)
-        // .truncate(true)
-        .open(RPC_ERROR_32001)
-        .unwrap();
+fn aggregate_error(folder: &String, uri: String, status_code: String, status_message: String) {
+    let file_0 = open_file(folder.clone() + "/" + RPC_ERROR_OTHER, true, false, true);
+    let file_32001 = open_file(folder.clone() + "/" + RPC_ERROR_32601, true, false, true);
+    let file_32601 = open_file(folder.clone() + "/" + RPC_ERROR_32001, true, false, true);
 
     if status_code == "-32601".to_string() {
         if !is_exist(RPC_ERROR_32601.to_string(), &uri) {
@@ -390,9 +421,11 @@ fn get_network_info(uri: String) -> (String, String) {
 }
 
 pub fn get_correct_nodes_from_file() -> Vec<String> {
+    println!("this 3");
+
     let mut nodes: Vec<String> = Vec::from(["".to_string()]);
 
-    let file = File::open("nodes_rpc_modules.log").unwrap();
+    let file = File::open("logs/evm/node_info.log").unwrap();
     let reader = BufReader::new(file);
 
     for line in reader.lines() {
@@ -402,6 +435,33 @@ pub fn get_correct_nodes_from_file() -> Vec<String> {
     }
 
     return nodes;
+}
+
+pub fn check_debug_set_head(uri: &String, folder: String) {
+    let nodes = get_correct_nodes_from_file();
+
+    // for nethermind - debug_resetHead
+
+    for n in nodes {
+        println!("this node: {} ", n);
+        thread::spawn(move || {
+            let block_number_raw = call_rpc_method(
+                &n,
+                &"eth_blockNumber".to_string(),
+                &"".to_string(),
+                &"logs/evm".to_string().clone(),
+            );
+
+            println!("block_number_raw: {:?}", block_number_raw);
+        })
+        .join()
+        .expect("Thread panicked");
+    }
+
+    // let block_number_raw = call_rpc_method(uri, &"debug_setHead".to_string(), &"payload".to_string(), folder);
+
+    // 1/ send eth_blockNumber
+    // 2. send debug_setHead(blockNumber)
 }
 
 #[cfg(test)]

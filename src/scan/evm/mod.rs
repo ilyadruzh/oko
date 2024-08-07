@@ -28,7 +28,7 @@ impl WorkerStats {
 
 pub struct EvmScanner {
     // chain_storage: ChainStorage, // Hash storage with the longest chain
-    stats: WorkerStats,          // struct for thread management & statistics
+    stats: WorkerStats, // struct for thread management & statistics
 }
 
 impl EvmScanner {
@@ -41,15 +41,15 @@ impl EvmScanner {
         }
     }
 
-    pub fn start(&mut self) -> OkoResult<()> {
-        debug!(target: "scanner", "Starting worker ...");
-        self.on_start()
-    }
+    // pub fn start(&mut self) -> OkoResult<()> {
+    //     debug!(target: "scanner", "Starting worker ...");
+    //     self.on_start()
+    // }
 
-    fn on_start(&mut self) -> OkoResult<()> {
-        start_scan_evm_networks();
-        Ok(())
-    }
+    // fn on_start(&mut self) -> OkoResult<()> {
+    //     start_scan_evm_networks(self.);
+    //     Ok(())
+    // }
 
     /// Triggers the on_complete() callback and updates statistics.
     fn on_complete(&mut self) -> OkoResult<()> {

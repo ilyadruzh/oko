@@ -1,7 +1,5 @@
-use hex_literal::hex;
 
 use std::{
-    io::Error,
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -29,7 +27,7 @@ pub struct Ethereum;
 
 impl Network for Ethereum {
     fn name(&self) -> String {
-        String::from("Ethereum")
+        String::from("ethereum")
     }
     fn chain_id(&self) -> u8 {
         0x00
@@ -48,8 +46,8 @@ impl Network for Ethereum {
     }
 }
 
-#[derive(Clone)]
 // Holds the selected coin type information
+#[derive(Debug, Clone)]
 pub struct NetworkType {
     pub name: String,
     pub chain_id: u8,

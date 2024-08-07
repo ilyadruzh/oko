@@ -79,7 +79,7 @@ impl Store {
 }
 
 pub fn get_nodes_from_chainid_list() -> Vec<ChainIDNodeInfo> {
-    let res = fs::read_to_string("src/database/evm_chains_1.json").expect("Can't read file"); // read file into string
+    let res = fs::read_to_string("src/database/chainid_network.json").expect("Can't read file"); // read file into string
 
     // let s = match res { // get value from Result object
     //     Ok(s) => s,

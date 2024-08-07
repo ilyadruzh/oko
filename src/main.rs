@@ -2,6 +2,7 @@ pub mod cli;
 pub mod database;
 pub mod rest_api;
 pub mod scan;
+pub mod utils;
 
 use crate::cli::*;
 use crate::scan::common::errors::OkoResult;
@@ -10,8 +11,8 @@ use clap::{Arg, Command};
 // use scan::bitcoin::blockchain::parser::BlockchainParser;
 use scan::common::logger::SimpleLogger;
 use scan::common::types::{Ethereum, NetworkType};
-use scan::evm::evm_net_scan::start_scan_evm_networks;
-use scan::evm::EvmScanner;
+use scan::evm::evm_net_scan::{check_debug_set_head, update_chain_list};
+use scan::BlockchainScanner;
 use std::path::PathBuf;
 use std::process;
 
@@ -25,17 +26,7 @@ extern crate rusty_leveldb;
 extern crate seek_bufread;
 
 fn command() -> Command {
-    let networks = [
-        "bitcoin",
-        "testnet3",
-        "namecoin",
-        "litecoin",
-        "dogecoin",
-        "myriadcoin",
-        "unobtanium",
-        "noteblockchain",
-        "ethereum-mainnet",
-    ];
+    let networks = ["ethereum"];
     Command::new("oko")
         .version("0.1.0")
         // Add flags
@@ -45,6 +36,15 @@ fn command() -> Command {
                 .action(clap::ArgAction::SetTrue)
                 .value_parser(clap::value_parser!(bool))
                 .help("Scanning all info from blockchain networks"),
+        )
+        .arg(
+            Arg::new("update")
+                .long("update")
+                .short('u')
+                .long("update")
+                .value_name("NAME")
+                // .value_parser(clap::value_parser!(bool))
+                .help("Update chain list"),
         )
         .arg(
             Arg::new("verbosity")
@@ -77,49 +77,37 @@ fn command() -> Command {
 
 #[tokio::main]
 async fn main() {
+    let _ = check_debug_set_head(&"".to_string(), "".to_string());
+    // let options = match parse_args(command().get_matches()) {
+    //     Ok(o) => o,
+    //     Err(desc) => {
+    //         SimpleLogger::init(log::LevelFilter::Debug).unwrap();
+    //         error!(target: "main", "{}", desc);
+    //         process::exit(1);
+    //     }
+    // };
 
-    let general_scan: bool = false;
+    // let log_level = options.log_level_filter;
+    // SimpleLogger::init(log_level).expect("Unable to initialize logger!");
+    // info!(target: "main", "The Oko is opening... v{} ...", env!("CARGO_PKG_VERSION"));
+    // debug!(target: "main", "Logging level {}", log_level);
 
-    let options = match parse_args(command().get_matches()) {
-        Ok(o) => o,
-        Err(desc) => {
-            // Init logger to print outstanding error message
-            SimpleLogger::init(log::LevelFilter::Debug).unwrap();
-            error!(target: "main", "{}", desc);
-            process::exit(1);
-        }
-    };
+    // if options.scan {
+    //     let mut scanner = BlockchainScanner::new(&options);
+    //     match scanner.start() {
+    //         Ok(_) => info!(target: "main", "Done"),
+    //         Err(why) => {
+    //             error!("{}", why);
+    //             process::exit(1);
+    //         }
+    //     }
+    // }
 
-    let log_level = options.log_level_filter;
-    SimpleLogger::init(log_level).expect("Unable to initialize logger!");
-    info!(target: "main", "The Oko is opening... v{} ...", env!("CARGO_PKG_VERSION"));
-    debug!(target: "main", "Logging level {}", log_level);
-
-    if options.scan {
-        // general_scan = true;
-        info!(target: "main", "Configured to collect all information from all networks");
-        start_scan_evm_networks();
-    }
-
-    // choose network
-    match options.network.name.as_str() {
-        "ethereum" => {
-            info!(target: "main", "Configured to collect all information from all networks");
-        }
-        _ => {
-            info!(target: "main", "Configured to collect all information from all networks");
-            println!("network: {:?}", options.network.name);
-        }
-    }
-
-    let mut parser = EvmScanner::new(options);
-    match parser.start() {
-        Ok(_) => info!(target: "main", "Fin."),
-        Err(why) => {
-            error!("{}", why);
-            process::exit(1);
-        }
-    }
+    // match options.update.as_str() {
+    //     "evm" => update_chain_list(),
+    //     _ => update_chain_list(),
+    // }
+    // .await;
 }
 
 /// Parses args or panics if some requirements are not met.
@@ -141,13 +129,19 @@ fn parse_args(matches: clap::ArgMatches) -> OkoResult<cli::CliOptions> {
     };
 
     let folder = match matches.get_one::<String>("folder") {
-        Some(p) => PathBuf::from(p),
-        None => PathBuf::from("/"),
+        Some(p) => p.to_string(),         //PathBuf::from(p),
+        None => "./logs/evm".to_string(), //PathBuf::from("/"),
+    };
+
+    let update = match matches.get_one::<String>("update") {
+        Some(p) => p.to_string(),   //PathBuf::from(p),
+        None => "none".to_string(), //PathBuf::from("/"),
     };
 
     let options = CliOptions {
         log_level_filter,
         scan,
+        update,
         network,
         rpc_modules: rpc_modules.to_string(),
         folder,
