@@ -40,7 +40,7 @@ pub struct ChainIDNodeInfo {
     pub rpc: Vec<String>,
     // features: Vec<ChainIDFeatures>,
     faucets: Vec<String>,
-    nativeCurrency: ChainIDNativeCurrency,
+    // native_currency: ChainIDNativeCurrency,
     // info_url: String,
     // short_name: String,
     // chain_id: String,
@@ -119,10 +119,10 @@ pub async fn get_evm_nodes(store: Store) -> Result<impl warp::Reply, warp::Rejec
 }
 
 pub async fn update_node_to_evm_nodes(
-    node: EVMNode,
-    store: Store,
+    // node: EVMNode,
+    // store: Store,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    let r = store.evm_nodes.write().insert(node.url, node.info);
+    // let r = store.evm_nodes.write().insert(node.url, node.info);
     println!("update_node_to_evm_nodes");
     Ok(warp::reply::with_status(
         "Updated node from EVM nodes",
@@ -131,10 +131,10 @@ pub async fn update_node_to_evm_nodes(
 }
 
 pub async fn delete_node_to_evm_nodes(
-    node: EVMNode,
-    store: Store,
+    // node: EVMNode,
+    // store: Store,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    let r = store.evm_nodes.write().remove(&node.url);
+    // let _r = store.evm_nodes.write().remove(&node.url);
     println!("delete_node_to_evm_nodes");
     Ok(warp::reply::with_status(
         "Removed node from evm nodes",

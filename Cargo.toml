@@ -31,6 +31,8 @@ tokio = { version = "1.39.2", features = [
 ] } # для асинхронной среды выполнения
 futures = { version = "0.3.30" }
 env_logger = "0.11.5"
+sha3 = "0.10.8"
+hex-literal = "0.4.1"
 
 [dev-dependencies]
 tempfile = "^3.6.0"

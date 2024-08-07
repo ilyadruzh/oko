@@ -1,25 +1,19 @@
+pub mod cli;
 pub mod database;
 pub mod rest_api;
 pub mod scan;
 
+use crate::cli::*;
+use crate::scan::common::errors::OkoResult;
 use clap::{Arg, Command};
-use scan::evm::evm_net_scan::{call_rpc_method, get_correct_nodes_from_file, start_scan_evm_networks};
-use std::boxed::Box;
+// use scan::bitcoin::blockchain::parser::chain::ChainStorage;
+// use scan::bitcoin::blockchain::parser::BlockchainParser;
+use scan::common::logger::SimpleLogger;
+use scan::common::types::{Ethereum, NetworkType};
+use scan::evm::evm_net_scan::start_scan_evm_networks;
+use scan::evm::EvmScanner;
 use std::path::PathBuf;
-use std::thread;
-
-use crate::scan::blockchain::parser::types::{Bitcoin, CoinType};
-use crate::scan::callbacks::balances::Balances;
-use crate::scan::callbacks::csvdump::CsvDump;
-use crate::scan::callbacks::opreturn::OpReturn;
-use crate::scan::callbacks::simplestats::SimpleStats;
-use crate::scan::callbacks::unspentcsvdump::UnspentCsvDump;
-use crate::scan::callbacks::Callback;
-use crate::scan::common::utils;
-
-use crate::scan::types::*;
-
-use crate::scan::errors::OpResult;
+use std::process;
 
 #[macro_use]
 extern crate log;
@@ -31,7 +25,7 @@ extern crate rusty_leveldb;
 extern crate seek_bufread;
 
 fn command() -> Command {
-    let coins = [
+    let networks = [
         "bitcoin",
         "testnet3",
         "namecoin",
@@ -43,332 +37,120 @@ fn command() -> Command {
         "ethereum-mainnet",
     ];
     Command::new("oko")
-    .version("0.1.0")
-    // Add flags
-    .arg(Arg::new("verify")
-        .long("verify")
-        .action(clap::ArgAction::SetTrue)
-        .value_parser(clap::value_parser!(bool))
-        .help("Verifies merkle roots and block hashes"))
-    .arg(Arg::new("verbosity")
-        .short('v')
-        .action(clap::ArgAction::Count)
-        .help("Increases verbosity level. Info=0, Debug=1, Trace=2 (default: 0)"))
-    // Add options
-    .arg(Arg::new("coin")
-        .short('c')
-        .long("coin")
-        .value_name("NAME")
-        .value_parser(clap::builder::PossibleValuesParser::new(coins))
-        .help("Specify blockchain coin (default: bitcoin)"))
-    .arg(Arg::new("blockchain-dir")
-        .short('d')
-        .long("blockchain-dir")
-        .help("Sets blockchain directory which contains blk.dat files (default: ~/.bitcoin/blocks)"))
-    .arg(Arg::new("start")
-        .short('s')
-        .long("start")
-        .value_name("HEIGHT")
-        .value_parser(clap::value_parser!(u64))
-        .help("Specify starting block for parsing (inclusive)"))
-    .arg(Arg::new("end")
-        .short('e')
-        .long("end")
-        .value_name("HEIGHT")
-        .value_parser(clap::value_parser!(u64))
-        .help("Specify last block for parsing (inclusive) (default: all known blocks)"))
-    // Add callbacks
-    .subcommand(UnspentCsvDump::build_subcommand())
-    .subcommand(CsvDump::build_subcommand())
-    .subcommand(SimpleStats::build_subcommand())
-    .subcommand(Balances::build_subcommand())
-    .subcommand(OpReturn::build_subcommand())
+        .version("0.1.0")
+        // Add flags
+        .arg(
+            Arg::new("scan")
+                .long("scan")
+                .action(clap::ArgAction::SetTrue)
+                .value_parser(clap::value_parser!(bool))
+                .help("Scanning all info from blockchain networks"),
+        )
+        .arg(
+            Arg::new("verbosity")
+                .short('v')
+                .action(clap::ArgAction::Count)
+                .help("Increases verbosity level. Info=0, Debug=1, Trace=2 (default: 0)"),
+        )
+        // Add options
+        .arg(
+            Arg::new("network")
+                .short('n')
+                .long("network")
+                .value_name("NAME")
+                .value_parser(clap::builder::PossibleValuesParser::new(networks))
+                .help("Specify blockchain network (default: all)"),
+        )
+        .arg(
+            Arg::new("rpc_modules")
+                .short('r')
+                .long("rpc_modules")
+                .help("Which RPC MODULES we collect (default: rpc_modules)"),
+        )
+        .arg(
+            Arg::new("folder")
+                .short('f')
+                .long("folder")
+                .help("Folder to save info (default: ./)"),
+        )
 }
 
 #[tokio::main]
 async fn main() {
-    start_scan_evm_networks();
 
-    // for node_url in get_correct_nodes_from_file() {
-    //     thread::spawn(move || {
-    //         let _ = call_rpc_method(&node_url, &"web3_clientVersion".to_string());
-    //     })
-    //     .join()
-    //     .expect("Thread panicked")
-    // }
+    let general_scan: bool = false;
 
-    // let test_client: reqwest::Client = reqwest::Client::new();
-    // const uri: &str =
-    //     "https://services.tokenview.io/vipapi/nodeservice/eth?apikey=qVHq2o6jpaakcw3lRstl";
+    let options = match parse_args(command().get_matches()) {
+        Ok(o) => o,
+        Err(desc) => {
+            // Init logger to print outstanding error message
+            SimpleLogger::init(log::LevelFilter::Debug).unwrap();
+            error!(target: "main", "{}", desc);
+            process::exit(1);
+        }
+    };
 
-    // let _result = get_all_rpc_methods(&test_client, uri);
+    let log_level = options.log_level_filter;
+    SimpleLogger::init(log_level).expect("Unable to initialize logger!");
+    info!(target: "main", "The Oko is opening... v{} ...", env!("CARGO_PKG_VERSION"));
+    debug!(target: "main", "Logging level {}", log_level);
 
-    // Ok(())
+    if options.scan {
+        // general_scan = true;
+        info!(target: "main", "Configured to collect all information from all networks");
+        start_scan_evm_networks();
+    }
 
-    // println!("rpc request: ", result);
+    // choose network
+    match options.network.name.as_str() {
+        "ethereum" => {
+            info!(target: "main", "Configured to collect all information from all networks");
+        }
+        _ => {
+            info!(target: "main", "Configured to collect all information from all networks");
+            println!("network: {:?}", options.network.name);
+        }
+    }
 
-    // rest_api::start_server();
-
-    // let options = match parse_args(command().get_matches()) {
-    //     Ok(o) => o,
-    //     Err(desc) => {
-    //         // Init logger to print outstanding error message
-    //         SimpleLogger::init(log::LevelFilter::Debug).unwrap();
-    //         error!(target: "main", "{}", desc);
-    //         process::exit(1);
-    //     }
-    // };
-
-    // // Apply log filter based on verbosity
-    // let log_level = options.log_level_filter;
-    // SimpleLogger::init(log_level).expect("Unable to initialize logger!");
-    // info!(target: "main", "Стартуем Око v{} ...", env!("CARGO_PKG_VERSION"));
-    // debug!(target: "main", "Уровень логирования {}", log_level);
-    // if options.verify {
-    //     info!(target: "main", "Configured to verify merkle roots and block hashes");
-    // }
-
-    // let chain_storage = match ChainStorage::new(&options) {
-    //     Ok(storage) => storage,
-    //     Err(e) => {
-    //         error!(
-    //             target: "main",
-    //             "Cannot load blockchain data from: '{}'. {}",
-    //             options.blockchain_dir.display(),
-    //             e
-    //         );
-    //         process::exit(1);
-    //     }
-    // };
-
-    // let mut parser = BlockchainParser::new(options, chain_storage);
-    // match parser.start() {
-    //     Ok(_) => info!(target: "main", "Fin."),
-    //     Err(why) => {
-    //         error!("{}", why);
-    //         process::exit(1);
-    //     }
-    // }
+    let mut parser = EvmScanner::new(options);
+    match parser.start() {
+        Ok(_) => info!(target: "main", "Fin."),
+        Err(why) => {
+            error!("{}", why);
+            process::exit(1);
+        }
+    }
 }
 
 /// Parses args or panics if some requirements are not met.
-fn parse_args(matches: clap::ArgMatches) -> OpResult<ParserOptions> {
-    let verify = matches.get_flag("verify");
+fn parse_args(matches: clap::ArgMatches) -> OkoResult<cli::CliOptions> {
+    let scan = matches.get_flag("scan");
     let log_level_filter = match matches.get_count("verbosity") {
         0 => log::LevelFilter::Info,
         1 => log::LevelFilter::Debug,
         _ => log::LevelFilter::Trace,
     };
 
-    let coin = matches
-        .get_one::<String>("coin")
-        .map_or_else(|| CoinType::from(Bitcoin), |v| v.parse().unwrap());
-    let blockchain_dir = match matches.get_one::<String>("blockchain-dir") {
-        Some(p) => PathBuf::from(p),
-        None => utils::get_absolute_blockchain_dir(&coin),
+    let network = matches
+        .get_one::<String>("network")
+        .map_or_else(|| NetworkType::from(Ethereum), |v| v.parse().unwrap());
+
+    let rpc_modules = match matches.get_one::<String>("rpc_modules") {
+        Some(p) => p,
+        None => &"rpc_modules".to_string(),
     };
-    let start = matches.get_one::<u64>("start").copied().unwrap_or(0);
-    let end = matches.get_one::<u64>("end").copied();
-    let range = BlockHeightRange::new(start, end)?;
 
-    // Set callback
-    let callback: Box<dyn Callback>;
-    if let Some(matches) = matches.subcommand_matches("simplestats") {
-        callback = Box::new(SimpleStats::new(matches)?);
-    } else if let Some(matches) = matches.subcommand_matches("csvdump") {
-        callback = Box::new(CsvDump::new(matches)?);
-    } else if let Some(matches) = matches.subcommand_matches("unspentcsvdump") {
-        callback = Box::new(UnspentCsvDump::new(matches)?);
-    } else if let Some(matches) = matches.subcommand_matches("balances") {
-        callback = Box::new(Balances::new(matches)?);
-    } else if let Some(matches) = matches.subcommand_matches("opreturn") {
-        callback = Box::new(OpReturn::new(matches)?);
-    } else {
-        clap::error::Error::<clap::error::DefaultFormatter>::raw(
-            clap::error::ErrorKind::MissingSubcommand,
-            "error: No valid callback specified.\nFor more information try --help",
-        )
-        .exit();
-    }
+    let folder = match matches.get_one::<String>("folder") {
+        Some(p) => PathBuf::from(p),
+        None => PathBuf::from("/"),
+    };
 
-    let options = ParserOptions {
-        coin,
-        callback,
-        verify,
-        blockchain_dir,
+    let options = CliOptions {
         log_level_filter,
-        range,
+        scan,
+        network,
+        rpc_modules: rpc_modules.to_string(),
+        folder,
     };
     Ok(options)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_args_subcommand() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        parse_args(command().get_matches_from([
-            "rusty-blockparser",
-            "unspentcsvdump",
-            tmp_dir.path().to_str().unwrap(),
-        ]))
-        .unwrap();
-        parse_args(command().get_matches_from([
-            "rusty-blockparser",
-            "csvdump",
-            tmp_dir.path().to_str().unwrap(),
-        ]))
-        .unwrap();
-        parse_args(command().get_matches_from(["rusty-blockparser", "simplestats"])).unwrap();
-        parse_args(command().get_matches_from([
-            "rusty-blockparser",
-            "balances",
-            tmp_dir.path().to_str().unwrap(),
-        ]))
-        .unwrap();
-        parse_args(command().get_matches_from(["rusty-blockparser", "opreturn"])).unwrap();
-    }
-
-    #[test]
-    fn test_args_coin() {
-        let args = ["rusty-blockparser", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.coin.name, "Bitcoin");
-
-        let args = ["rusty-blockparser", "-c", "testnet3", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.coin.name, "TestNet3");
-
-        let args = ["rusty-blockparser", "--coin", "namecoin", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.coin.name, "Namecoin");
-    }
-
-    #[test]
-    fn test_args_verify() {
-        let args = ["rusty-blockparser", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert!(!options.verify);
-
-        let args = ["rusty-blockparser", "--verify", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert!(options.verify);
-    }
-
-    #[test]
-    fn test_args_blockchain_dir() {
-        let args = ["rusty-blockparser", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        let bitcoin: crate::blockchain::parser::types::CoinType = "bitcoin".parse().unwrap();
-        assert_eq!(
-            options.blockchain_dir,
-            utils::get_absolute_blockchain_dir(&bitcoin)
-        );
-
-        let args = ["rusty-blockparser", "-d", "foo", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.blockchain_dir.to_str().unwrap(), "foo");
-
-        let args = [
-            "rusty-blockparser",
-            "--blockchain-dir",
-            "foo",
-            "simplestats",
-        ];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.blockchain_dir.to_str().unwrap(), "foo");
-    }
-
-    #[test]
-    fn test_args_log_level() {
-        let args = ["rusty-blockparser", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.log_level_filter, log::LevelFilter::Info,);
-
-        let args = ["rusty-blockparser", "-v", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.log_level_filter, log::LevelFilter::Debug,);
-
-        let args = ["rusty-blockparser", "-vv", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.log_level_filter, log::LevelFilter::Trace,);
-
-        let args = ["rusty-blockparser", "-vvv", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(options.log_level_filter, log::LevelFilter::Trace,);
-    }
-
-    #[test]
-    fn test_args_start() {
-        let args = ["rusty-blockparser", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(
-            options.range,
-            BlockHeightRange {
-                start: 0,
-                end: None
-            }
-        );
-
-        let args = ["rusty-blockparser", "-s", "10", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(
-            options.range,
-            BlockHeightRange {
-                start: 10,
-                end: None
-            }
-        );
-
-        let args = ["rusty-blockparser", "--start", "10", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(
-            options.range,
-            BlockHeightRange {
-                start: 10,
-                end: None
-            }
-        );
-    }
-
-    #[test]
-    fn test_args_end() {
-        let args = ["rusty-blockparser", "-e", "10", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(
-            options.range,
-            BlockHeightRange {
-                start: 0,
-                end: Some(10)
-            }
-        );
-
-        let args = ["rusty-blockparser", "--end", "10", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(
-            options.range,
-            BlockHeightRange {
-                start: 0,
-                end: Some(10)
-            }
-        );
-    }
-
-    #[test]
-    fn test_args_start_and_end() {
-        let args = ["rusty-blockparser", "-s", "1", "-e", "2", "simplestats"];
-        let options = parse_args(command().get_matches_from(args)).unwrap();
-        assert_eq!(
-            options.range,
-            BlockHeightRange {
-                start: 1,
-                end: Some(2)
-            }
-        );
-
-        let args = ["rusty-blockparser", "-s", "2", "-e", "1", "simplestats"];
-        assert!(parse_args(command().get_matches_from(args)).is_err());
-    }
 }

@@ -1,7 +1,9 @@
 use bitcoin::hashes::{sha256d, Hash};
 use std::path::PathBuf;
 
-use crate::scan::blockchain::parser::types::CoinType;
+// use crate::scan::bitcoin::blockchain::parser::types::CoinType;
+
+use super::types::NetworkType;
 
 /// Calculates merkle root for the whole block
 /// See: https://en.bitcoin.it/wiki/Protocol_documentation#Merkle_Trees
@@ -46,10 +48,10 @@ pub fn hex_to_vec(hex_str: &str) -> Vec<u8> {
 }
 
 /// Returns default directory. TODO: test on windows
-pub fn get_absolute_blockchain_dir(coin: &CoinType) -> PathBuf {
+pub fn get_absolute_blockchain_dir(network: &NetworkType) -> PathBuf {
     dirs::home_dir()
         .expect("Unable to get home path from env!")
-        .join(&coin.default_folder)
+        .join(&network.default_folder)
 }
 
 /// Get mean value from u32 slice
