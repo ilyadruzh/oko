@@ -1,6 +1,7 @@
 extern crate web3;
 use super::types::POSTAPIResponse;
 use crate::database::evm_db::get_nodes_from_chainid_list;
+use hex::decode;
 use reqwest::header::CONTENT_TYPE;
 use reqwest::{Response, StatusCode};
 use serde_json::{json, Value};
@@ -9,6 +10,7 @@ use std::error::Error;
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
@@ -194,7 +196,7 @@ pub async fn get_rpc_modules_async(uri: String, folder: String) -> Result<(), Bo
 pub async fn call_rpc_method(
     uri: &String,
     method: &String,
-    payload: &String,
+    payload: &str,
     folder: &String,
 ) -> Result<Value, Box<dyn Error>> {
     let client: reqwest::Client = reqwest::Client::new();
@@ -203,10 +205,20 @@ pub async fn call_rpc_method(
     let filepath = folder.to_owned() + "/" + method + ".log";
     let file = open_file(filepath.to_owned(), true, false, true);
 
+    // let pload: Vec<&str>;
+
+    // if payload != "" {
+    //     pload = vec!["[]"];
+    // } else {
+    //     pload = vec![payload]
+    // }
+
     map.insert("jsonrpc", "2.0");
     map.insert("method", &method);
-    // map.insert("params", "[]");
+    map.insert("params", vec![payload]);
     map.insert("id", "67");
+
+    println!("map: {:?}", map);
 
     let resp = client
         .post(uri)
@@ -251,8 +263,14 @@ pub async fn call_rpc_method(
                         }
                     } else if method == "eth_blockNumber" {
                         if let Some(block_number) = json_val.get("result") {
-                            println!("block_number: {}", block_number);
+                            if !is_exist(filepath.clone(), &block_number.to_string()) {
+                                write_to_file(file, uri, &block_number.to_string()).await;
+                            }
 
+                            return Ok(block_number.clone());
+                        }
+                    } else if method == "debug_setHead" {
+                        if let Some(block_number) = json_val.get("result") {
                             if !is_exist(filepath.clone(), &block_number.to_string()) {
                                 write_to_file(file, uri, &block_number.to_string()).await;
                             }
@@ -261,7 +279,7 @@ pub async fn call_rpc_method(
                         }
                     }
 
-                    println!("Method doesn't allowed");
+                    println!("Method doesn't allowed: {:?}", resp_200);
                     return Ok(value);
                 }
                 _ => {
@@ -440,6 +458,8 @@ pub fn get_correct_nodes_from_file() -> Vec<String> {
 pub fn check_debug_set_head(uri: &String, folder: String) {
     let nodes = get_correct_nodes_from_file();
 
+    info!("check_debug_set_head for: {}", uri);
+
     // for nethermind - debug_resetHead
 
     for n in nodes {
@@ -457,6 +477,42 @@ pub fn check_debug_set_head(uri: &String, folder: String) {
         .join()
         .expect("Thread panicked");
     }
+
+    // let block_number_raw = call_rpc_method(uri, &"debug_setHead".to_string(), &"payload".to_string(), folder);
+
+    // 1/ send eth_blockNumber
+    // 2. send debug_setHead(blockNumber)
+}
+
+pub fn check_single_debug_set_head(uri: &String) {
+    let new_uri = uri.to_owned();
+
+    thread::spawn(move || {
+        let block_number_raw = call_rpc_method(
+            &new_uri,
+            &"eth_blockNumber".to_string(),
+            &"[]".to_string(),
+            &"logs/evm".to_string().clone(),
+        );
+
+        let block_number_string = block_number_raw.unwrap().to_string().trim().to_string(); //trim_start_matches("0x");
+        println!("block_number_string: {}", block_number_string);
+
+        // let (block_number_trim, last) = block_number_string
+        //     .trim_start_matches("\"")
+        //     .split_at(block_number_string.len() - 2);
+
+        // let debug_setHead = call_rpc_method(
+        //     &new_uri,
+        //     &"debug_setHead".to_string(),
+        //     &"block_number_string".to_string(),
+        //     &"logs/evm".to_string().clone(),
+        // );
+
+        // println!("debug_setHead: {}", debug_setHead.unwrap().to_string());
+    })
+    .join()
+    .expect("Thread panicked");
 
     // let block_number_raw = call_rpc_method(uri, &"debug_setHead".to_string(), &"payload".to_string(), folder);
 

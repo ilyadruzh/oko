@@ -11,7 +11,7 @@ use clap::{Arg, Command};
 // use scan::bitcoin::blockchain::parser::BlockchainParser;
 use scan::common::logger::SimpleLogger;
 use scan::common::types::{Ethereum, NetworkType};
-use scan::evm::evm_net_scan::{check_debug_set_head, update_chain_list};
+use scan::evm::evm_net_scan::{check_debug_set_head, check_single_debug_set_head, update_chain_list};
 use scan::BlockchainScanner;
 use std::path::PathBuf;
 use std::process;
@@ -77,7 +77,7 @@ fn command() -> Command {
 
 #[tokio::main]
 async fn main() {
-    let _ = check_debug_set_head(&"".to_string(), "".to_string());
+    let _ = check_single_debug_set_head(&"https://testnet.rpc.abyssprotocol.ai/".to_string());
     // let options = match parse_args(command().get_matches()) {
     //     Ok(o) => o,
     //     Err(desc) => {
