@@ -1,16 +1,13 @@
 extern crate web3;
 use super::types::POSTAPIResponse;
 use crate::database::evm_db::get_nodes_from_chainid_list;
-use hex::decode;
 use reqwest::header::CONTENT_TYPE;
 use reqwest::{Response, StatusCode};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::error::Error;
-use std::fs::{self, File, OpenOptions};
+use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
-use std::path::PathBuf;
-use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
@@ -32,13 +29,13 @@ pub fn start_scan_evm_networks(rpc_modules: String, folder: String) {
     // let mut count_urls = 0;
 
     for n in nodes {
-        for u in n.rpc {
+        for _u in n.rpc {
             if false {
             } else {
                 if rpc_modules == "rpc_modules" {
                     // count_urls += 1;
                     // println!("{}", all_urls - count_urls);
-                    let val = folder.clone();
+                    let _val = folder.clone();
 
                     println!("this 1");
 
@@ -196,7 +193,7 @@ pub async fn get_rpc_modules_async(uri: String, folder: String) -> Result<(), Bo
 pub async fn call_rpc_method(
     uri: &String,
     method: &String,
-    payload: &str,
+    _payload: &str,
     folder: &String,
 ) -> Result<Value, Box<dyn Error>> {
     let client: reqwest::Client = reqwest::Client::new();
@@ -208,14 +205,14 @@ pub async fn call_rpc_method(
     // let pload: Vec<&str>;
 
     // if payload != "" {
-    //     pload = vec!["[]"];
+    //     pload = Vec::new();
     // } else {
     //     pload = vec![payload]
     // }
 
     map.insert("jsonrpc", "2.0");
     map.insert("method", &method);
-    map.insert("params", vec![payload]);
+    // map.insert("params", pload.to_owned().to_owned());
     map.insert("id", "67");
 
     println!("map: {:?}", map);
@@ -291,8 +288,8 @@ pub async fn call_rpc_method(
         }
         Err(e) => {
             println!("Error: {}", e);
-            let url = e.url();
-            let source = e.source();
+            let _url = e.url();
+            let _source = e.source();
             println!("");
             return Ok(value);
         }
@@ -448,14 +445,14 @@ pub fn get_correct_nodes_from_file() -> Vec<String> {
 
     for line in reader.lines() {
         let l = line.unwrap().to_owned();
-        let (a, b) = l.split_once(char::is_whitespace).unwrap();
+        let (a, _b) = l.split_once(char::is_whitespace).unwrap();
         nodes.push(a.to_string().to_owned());
     }
 
     return nodes;
 }
 
-pub fn check_debug_set_head(uri: &String, folder: String) {
+pub fn check_debug_set_head(uri: &String, _folder: String) {
     let nodes = get_correct_nodes_from_file();
 
     info!("check_debug_set_head for: {}", uri);

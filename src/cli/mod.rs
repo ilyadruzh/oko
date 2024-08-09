@@ -1,8 +1,4 @@
-use std::path::PathBuf;
-
-use serde::Deserialize;
-
-use crate::scan::common::types::NetworkType;
+use crate::scan::common::types::{NetworkType};
 
 #[derive(Debug, Clone)]
 pub struct CliOptions {

@@ -8,25 +8,25 @@ use warp::{http, Filter};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 
-struct ChainIDFeatures {
+struct _ChainIDFeatures {
     name: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 
-struct ChainIDNativeCurrency {
+struct _ChainIDNativeCurrency {
     name: String,
     symbol: String,
     decimals: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-struct ChainIDEns {
+struct _ChainIDEns {
     registry: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-struct ChainIDExplorer {
+struct _ChainIDExplorer {
     name: String,
     // icon: String,
     url: String,
@@ -163,4 +163,4 @@ pub fn json_body() -> impl Filter<Extract = (EVMNode,), Error = warp::Rejection>
 // положить в json
 pub fn add_to_json() {}
 
-fn check_if_exist() {}
+// fn check_if_exist() {}

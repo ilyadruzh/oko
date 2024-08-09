@@ -1,11 +1,7 @@
 extern crate web3;
-use log::{info, warn};
-use reqwest::{header::CONTENT_TYPE, Client};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::error::Error;
-
 use crate::scan::evm::types::{GETAPIResponse, JSONResponse};
+use reqwest::{header::CONTENT_TYPE, Client};
+use std::collections::HashMap;
 
 #[tokio::main]
 pub async fn get(client: &Client, uri: &str) -> Result<GETAPIResponse, Box<dyn std::error::Error>> {

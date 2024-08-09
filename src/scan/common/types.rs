@@ -1,39 +1,38 @@
-
+use super::{errors::{OkoError, OkoErrorKind}, networks::Ethereum};
+use sha3::{Digest, Sha3_256};
 use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-
-// use hex_literal::hex;
-use sha3::{Digest, Sha3_256};
-
-use super::errors::{OkoError, OkoErrorKind};
-
-/// Trait to specify the underlying coin of a blockchain
-/// Needs a proper magic value and a network id for address prefixes
-pub trait Network {
-    // Human readable coin name
-    fn name(&self) -> String;
-    // https://en.bitcoin.it/wiki/List_of_address_prefixes
-    fn chain_id(&self) -> u8;
-    fn network_id(&self) -> u8;
-    // Returns genesis hash
-    fn genesis(&self) -> Sha3_256;
-    // Default working directory to look for datadir, for example .bitcoin
-    fn default_folder(&self) -> PathBuf;
+pub enum NetworkMode {
+    Mainnet,
+    _Devnet,
+    _Testnet,
 }
 
-pub struct Ethereum;
+pub trait Network {
+    fn name(&self) -> String;
+    fn r#type(&self) -> NetworkMode; // mainnet, devnet, testnet, ...
+    fn chain_id(&self) -> u8;
+    fn network_id(&self) -> u8;
+    fn genesis(&self) -> Sha3_256;
+    fn folder(&self) -> PathBuf;
+    fn rpcs(&self) -> Vec<String>;
+}
 
 impl Network for Ethereum {
     fn name(&self) -> String {
-        String::from("ethereum")
+        String::from("Ethereum Mainnet")
+    }
+    fn r#type(&self) -> NetworkMode {
+        // mainnet, devnet, testnet, ...
+        NetworkMode::Mainnet
     }
     fn chain_id(&self) -> u8 {
-        0x00
+        1
     }
     fn network_id(&self) -> u8 {
-        0x00
+        1
     }
     fn genesis(&self) -> Sha3_256 {
         let mut hasher = Sha3_256::new();
@@ -41,19 +40,22 @@ impl Network for Ethereum {
         hasher.update(b"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
         hasher
     }
-    fn default_folder(&self) -> PathBuf {
+    fn folder(&self) -> PathBuf {
         Path::new(".oko").join("ethereum")
+    }
+    fn rpcs(&self) -> Vec<String> {
+        vec![String::from("")]
     }
 }
 
-// Holds the selected coin type information
 #[derive(Debug, Clone)]
 pub struct NetworkType {
     pub name: String,
     pub chain_id: u8,
     pub network_id: u8,
     pub genesis_hash: Sha3_256,
-    pub default_folder: PathBuf,
+    pub folder: PathBuf,
+    pub rpcs: Vec<String>,
 }
 
 impl Default for NetworkType {
@@ -69,7 +71,8 @@ impl<T: Network> From<T> for NetworkType {
             chain_id: network.chain_id(),
             network_id: network.network_id(),
             genesis_hash: network.genesis(),
-            default_folder: network.default_folder(),
+            folder: network.folder(),
+            rpcs: network.rpcs(),
         }
     }
 }

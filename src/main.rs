@@ -4,17 +4,12 @@ pub mod rest_api;
 pub mod scan;
 pub mod utils;
 
+use std::str::FromStr;
+
 use crate::cli::*;
 use crate::scan::common::errors::OkoResult;
 use clap::{Arg, Command};
-// use scan::bitcoin::blockchain::parser::chain::ChainStorage;
-// use scan::bitcoin::blockchain::parser::BlockchainParser;
-use scan::common::logger::SimpleLogger;
-use scan::common::types::{Ethereum, NetworkType};
-use scan::evm::evm_net_scan::{check_debug_set_head, check_single_debug_set_head, update_chain_list};
-use scan::BlockchainScanner;
-use std::path::PathBuf;
-use std::process;
+use scan::{common::types::NetworkType, evm::evm_net_scan::check_single_debug_set_head};
 
 #[macro_use]
 extern crate log;
@@ -25,7 +20,7 @@ extern crate rayon;
 extern crate rusty_leveldb;
 extern crate seek_bufread;
 
-fn command() -> Command {
+fn _command() -> Command {
     let networks = ["ethereum"];
     Command::new("oko")
         .version("0.1.0")
@@ -111,7 +106,7 @@ async fn main() {
 }
 
 /// Parses args or panics if some requirements are not met.
-fn parse_args(matches: clap::ArgMatches) -> OkoResult<cli::CliOptions> {
+fn _parse_args(matches: clap::ArgMatches) -> OkoResult<cli::CliOptions> {
     let scan = matches.get_flag("scan");
     let log_level_filter = match matches.get_count("verbosity") {
         0 => log::LevelFilter::Info,
@@ -119,9 +114,10 @@ fn parse_args(matches: clap::ArgMatches) -> OkoResult<cli::CliOptions> {
         _ => log::LevelFilter::Trace,
     };
 
-    let network = matches
-        .get_one::<String>("network")
-        .map_or_else(|| NetworkType::from(Ethereum), |v| v.parse().unwrap());
+    let network = matches.get_one::<String>("network").map_or_else(
+        || NetworkType::from_str("ethereum").unwrap(),
+        |v| v.parse().unwrap(),
+    );
 
     let rpc_modules = match matches.get_one::<String>("rpc_modules") {
         Some(p) => p,

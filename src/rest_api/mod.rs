@@ -5,7 +5,7 @@ use warp::Filter;
 #[tokio::main]
 pub async fn start_server() {
     let store = Store::new();
-    let store_filter = warp::any().map(move || store.clone());
+    let _store_filter = warp::any().map(move || store.clone());
 
     // let add_evm_node = warp::post()
     //     .and(warp::path("v1"))

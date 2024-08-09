@@ -1,41 +1,32 @@
 pub mod bitcoin;
 pub mod common;
 pub mod evm;
-use crate::utils::http_methods::{self, *};
 use crate::CliOptions;
-use common::{errors::OkoResult, types::NetworkType, utils};
-use evm::evm_net_scan::{
-    check_debug_set_head, get_correct_nodes_from_file, start_scan_evm_networks, update_chain_list,
-};
-use std::fs::File;
-use std::io;
-use std::{
-    path::PathBuf,
-    time::{Duration, Instant},
-};
+use common::{errors::OkoResult, types::NetworkType};
+use evm::evm_net_scan::start_scan_evm_networks;
 
-/// Small struct to hold statistics together
-struct WorkerStats {
-    pub started_at: Instant,
-    pub last_log: Instant,
-    pub measure_frame: Duration,
-}
+// /// Small struct to hold statistics together
+// struct WorkerStats {
+//     pub started_at: Instant,
+//     pub last_log: Instant,
+//     pub measure_frame: Duration,
+// }
 
-impl WorkerStats {
-    fn new() -> Self {
-        Self {
-            started_at: Instant::now(),
-            last_log: Instant::now(),
-            measure_frame: Duration::from_secs(10),
-        }
-    }
-}
+// impl WorkerStats {
+//     fn new() -> Self {
+//         Self {
+//             started_at: Instant::now(),
+//             last_log: Instant::now(),
+//             measure_frame: Duration::from_secs(10),
+//         }
+//     }
+// }
 
 pub struct BlockchainScanner {
     blockchain_network: NetworkType,
     blockchain_rpc_modules: String,
     folder: String,
-    stats: WorkerStats, // struct for thread management & statistics
+    // stats: WorkerStats, // struct for thread management & statistics
 }
 
 impl BlockchainScanner {
@@ -47,7 +38,7 @@ impl BlockchainScanner {
             blockchain_network: options.network.clone(),
             blockchain_rpc_modules: options.rpc_modules.clone(),
             folder: options.folder.clone(),
-            stats: WorkerStats::new(),
+            // stats: WorkerStats::new(),
         }
     }
 
@@ -86,17 +77,17 @@ impl BlockchainScanner {
         return res;
     }
 
-    /// Triggers the on_complete() callback and updates statistics.
-    fn on_complete(&mut self) -> OkoResult<()> {
-        info!(target: "scanner", "Done. Processed in {:.2} minutes.",
-        (Instant::now() - self.stats.started_at).as_secs_f32() / 60.0);
+    // Triggers the on_complete() callback and updates statistics.
+    // fn on_complete(&mut self) -> OkoResult<()> {
+    //     info!(target: "scanner", "Done. Processed in {:.2} minutes.",
+    //     (Instant::now() - self.stats.started_at).as_secs_f32() / 60.0);
 
-        self.on_complete()?;
-        trace!(target: "scanner", "on_complete() called");
-        Ok(())
-    }
+    //     // self.on_complete()?;
+    //     trace!(target: "scanner", "on_complete() called");
+    //     Ok(())
+    // }
 
-    fn print_progress(&mut self) {
-        todo!()
-    }
+    // fn print_progress(&mut self) {
+    //     todo!()
+    // }
 }

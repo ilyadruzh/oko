@@ -7,19 +7,19 @@ use std::io;
 use std::string;
 use std::sync;
 
-macro_rules! line_mark {
-    () => {
-        format!("Marked line: {} @ {}:{}", file!(), line!(), column!())
-    };
-}
+// macro_rules! line_mark {
+//     () => {
+//         format!("Marked line: {} @ {}:{}", file!(), line!(), column!())
+//     };
+// }
 
-/// Transforms a Option to Result
-/// If the Option contains None, a line mark will be placed along with OkoErrorKind::None
-macro_rules! transform {
-    ($e:expr) => {{
-        $e.ok_or(OkoError::new(OkoErrorKind::None).join_msg(&line_mark!()))?
-    }};
-}
+// /// Transforms a Option to Result
+// /// If the Option contains None, a line mark will be placed along with OkoErrorKind::None
+// macro_rules! transform {
+//     ($e:expr) => {{
+//         $e.ok_or(OkoError::new(OkoErrorKind::None).join_msg(&line_mark!()))?
+//     }};
+// }
 
 pub type OkoResult<T> = Result<T, OkoError>;
 
