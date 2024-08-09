@@ -1,4 +1,7 @@
-use super::{errors::{OkoError, OkoErrorKind}, networks::Ethereum};
+use super::{
+    errors::{OkoError, OkoErrorKind},
+    networks::Ethereum,
+};
 use sha3::{Digest, Sha3_256};
 use std::{
     path::{Path, PathBuf},
@@ -9,10 +12,9 @@ pub enum NetworkMode {
     _Devnet,
     _Testnet,
 }
-
 pub trait Network {
     fn name(&self) -> String;
-    fn r#type(&self) -> NetworkMode; // mainnet, devnet, testnet, ...
+    fn r#type(&self) -> NetworkMode;
     fn chain_id(&self) -> u8;
     fn network_id(&self) -> u8;
     fn genesis(&self) -> Sha3_256;
@@ -22,10 +24,9 @@ pub trait Network {
 
 impl Network for Ethereum {
     fn name(&self) -> String {
-        String::from("Ethereum Mainnet")
+        String::from("Ethereum")
     }
     fn r#type(&self) -> NetworkMode {
-        // mainnet, devnet, testnet, ...
         NetworkMode::Mainnet
     }
     fn chain_id(&self) -> u8 {
@@ -36,8 +37,7 @@ impl Network for Ethereum {
     }
     fn genesis(&self) -> Sha3_256 {
         let mut hasher = Sha3_256::new();
-        // write input message
-        hasher.update(b"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
+        hasher.update(b"d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"); // 0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3
         hasher
     }
     fn folder(&self) -> PathBuf {
